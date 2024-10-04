@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 export default function Login() {
+  const router = useRouter();
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
 
@@ -22,7 +24,7 @@ export default function Login() {
       if (response.ok) {
         localStorage.setItem('token', data.token);
 
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       } else {
         alert(data.message);
       }
