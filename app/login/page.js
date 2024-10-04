@@ -1,6 +1,7 @@
+"use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function Login() {
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white border border-blue-300 rounded-lg p-8 w-[800px]">
         <div className="flex flex-col md:flex-row">
-          <div className="flex-1 mb-8 md:mb-0">
+          <div className="flex flex-1 justify-center items-center mb-8 md:mb-0">
             <img src="/logo.png" alt="Science AIU Logo" className="mx-auto mb-6 w-40" />
             {/* <p className="text-gray-700 text-center md:text-left mb-6">
               Если у вас уже есть логин и пароль в системе Univer.kaznu.kz, введите их в меню справа для авторизации в системе.
@@ -48,7 +49,7 @@ export default function Login() {
             </p> */}
           </div>
           <div className="flex-1 border-l border-blue-300 pl-8">
-            <h2 className="text-xl font-bold mb-4">Вход в систему</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-900">Вход в систему</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Логин</label>
@@ -77,7 +78,7 @@ export default function Login() {
                 Войти
               </button>
             </form>
-            <p className="text-center mt-4 text-sm">
+            <p className="text-center mt-4 text-sm text-blue-400">
               Нет аккаунта?{' '}
               <Link href="/register" className="text-blue-500 hover:underline">
                 Зарегистрируйтесь здесь
@@ -86,7 +87,7 @@ export default function Login() {
           </div>
         </div>
         <div className="mt-6 text-center text-blue-600">
-          <Link className="text-sm hover:underline" href="/">
+          <Link className="text-sm hover:underline" href="https://www.aiu.edu.kz/ru">
             Сайт AIU
           </Link>{' '}
           |{' '}
