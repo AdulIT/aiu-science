@@ -9,8 +9,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      // Отправка данных на сервер для авторизации
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -21,59 +20,83 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Если авторизация успешна, сохраняем токен в localStorage
         localStorage.setItem('token', data.token);
 
-        // Перенаправляем пользователя на страницу личного кабинета
         window.location.href = '/dashboard';
       } else {
-        // Если авторизация неуспешна, показываем сообщение об ошибке
         alert(data.message);
       }
     } catch (error) {
-      console.error('Ошибка при авторизации:', error);
-      alert('Произошла ошибка. Попробуйте позже.');
+      console.error('Error during login:', error);
+      alert('An error occurred. Please try again later.');
     }
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white border rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center">Вход в систему</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block mb-1 text-left font-medium text-gray-700">ИИН</label>
-            <input
-              type="text"
-              value={iin}
-              onChange={(e) => setIIN(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+      <div className="bg-white border border-blue-300 rounded-lg p-8 w-[800px]">
+        <div className="flex flex-col md:flex-row">
+          <div className="flex-1 mb-8 md:mb-0">
+            <img src="/logo.png" alt="Science AIU Logo" className="mx-auto mb-6 w-40" />
+            {/* <p className="text-gray-700 text-center md:text-left mb-6">
+              Если у вас уже есть логин и пароль в системе Univer.kaznu.kz, введите их в меню справа для авторизации в системе.
+            </p> */}
+            {/* <p className="text-gray-700 text-center md:text-left">
+              Если вы забыли пароль, обратитесь в отдел сопровождения (вн.тел. 1142) для сброса старого и назначения нового пароля.
+            </p> */}
           </div>
-          <div>
-            <label className="block mb-1 text-left font-medium text-gray-700">Пароль</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="flex-1 border-l border-blue-300 pl-8">
+            <h2 className="text-xl font-bold mb-4">Вход в систему</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">Логин</label>
+                <input
+                  type="text"
+                  value={iin}
+                  onChange={(e) => setIIN(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">Пароль</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Войти
+              </button>
+            </form>
+            <p className="text-center mt-4 text-sm">
+              Нет аккаунта?{' '}
+              <Link href="/register" className="text-blue-500 hover:underline">
+                Зарегистрируйтесь здесь
+              </Link>
+            </p>
           </div>
-          <button
-            type="submit"
-            className="w-full py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Войти
-          </button>
-        </form>
-        <p className="text-center">
-          Нет аккаунта?{' '}
-          <Link href="/register" className="text-blue-500 hover:underline">
-            Зарегистрируйтесь
+        </div>
+        <div className="mt-6 text-center text-blue-600">
+          <Link className="text-sm hover:underline" href="/">
+            Сайт AIU
+          </Link>{' '}
+          |{' '}
+          <Link className="text-sm hover:underline" href="/">
+            {/* Система "Univer" */}
+          </Link>{' '}
+          {/* |{' '} */}
+          <Link className="text-sm hover:underline" href="/">
+            Инструкция по работе с системой
           </Link>
-        </p>
+        </div>
+        <p className="text-center text-gray-500 text-sm mt-4">&copy; AIU</p>
       </div>
     </div>
   );

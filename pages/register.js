@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 export default function Register() {
   const [iin, setIIN] = useState('');
@@ -15,8 +16,7 @@ export default function Register() {
     }
 
     try {
-      // Отправка данных на сервер для регистрации
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('http://localhost:8080/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ export default function Register() {
 
       if (response.ok) {
         alert('Регистрация прошла успешно! Пожалуйста, войдите в систему.');
-        window.location.href = '/login'; // Перенаправление на страницу входа
+        window.location.href = '/login';
       } else {
         alert(data.message);
       }
@@ -40,46 +40,52 @@ export default function Register() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white border rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center">Регистрация</h2>
+      <div className="bg-white border border-blue-300 rounded-lg p-8 w-[800px]">
+        <h2 className="text-2xl font-bold text-center mb-6">Регистрация</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block mb-1 text-left font-medium text-gray-700">ИИН</label>
+            <label className="block mb-1 font-medium text-gray-700">ИИН</label>
             <input
               type="text"
               value={iin}
               onChange={(e) => setIIN(e.target.value)}
               required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block mb-1 text-left font-medium text-gray-700">Пароль</label>
+            <label className="block mb-1 font-medium text-gray-700">Пароль</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block mb-1 text-left font-medium text-gray-700">Подтвердите пароль</label>
+            <label className="block mb-1 font-medium text-gray-700">Подтвердите пароль</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <button
             type="submit"
-            className="w-full py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Зарегистрироваться
           </button>
         </form>
+        <p className="text-center mt-4 text-sm">
+          Уже есть аккаунт?{' '}
+          <Link href="/login" className="text-blue-500 hover:underline">
+            Войти
+          </Link>
+        </p>
       </div>
     </div>
   );
