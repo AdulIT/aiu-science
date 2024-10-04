@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -127,8 +128,8 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Удаляем токен из localStorage
-    router.push('/login'); // Перенаправляем на страницу входа
+    localStorage.removeItem('token');
+    router.push('/login');
   };
 
   if (isLoading) {
@@ -143,6 +144,11 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
+        <div className="mb-4">
+          <Link href="/" className="text-blue-500 hover:underline">
+            Главная
+          </Link>
+        </div>
           <h1 className="text-2xl font-bold">Личный кабинет</h1>
           <button
             onClick={handleLogout}

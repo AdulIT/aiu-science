@@ -10,6 +10,7 @@ module.exports = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        aiuBlue: '#3F3F8F',
       },
       width: {
         '300': '300px',

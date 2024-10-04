@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function Publications() {
   const router = useRouter();
@@ -105,6 +106,11 @@ export default function Publications() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
+          <div className="mb-4">
+            <Link href="/" className="text-blue-500 hover:underline">
+              Главная
+            </Link>
+          </div>
           <h1 className="text-2xl font-bold">Публикации</h1>
           <button
             onClick={() => setIsAdding(true)}
