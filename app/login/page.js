@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Login() {
   const router = useRouter();
@@ -24,8 +25,17 @@ export default function Login() {
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
+        console.log(data.token);
 
-        router.push('/dashboard');
+        // Декодируем токен, чтобы получить роль пользователя
+        const decodedToken = jwtDecode(data.token);
+        const userRole = decodedToken.role;
+
+        if (userRole === 'user') {
+          router.push('/home-user');
+        } else {
+          router.push('/home-admin');
+        }
       } else {
         alert(data.message);
       }
@@ -41,12 +51,6 @@ export default function Login() {
         <div className="flex flex-col md:flex-row">
           <div className="flex flex-1 justify-center items-center mb-8 md:mb-0">
             <img src="/logo.png" alt="Science AIU Logo" className="mx-auto mb-6 w-40" />
-            {/* <p className="text-gray-700 text-center md:text-left mb-6">
-              Если у вас уже есть логин и пароль в системе Univer.kaznu.kz, введите их в меню справа для авторизации в системе.
-            </p> */}
-            {/* <p className="text-gray-700 text-center md:text-left">
-              Если вы забыли пароль, обратитесь в отдел сопровождения (вн.тел. 1142) для сброса старого и назначения нового пароля.
-            </p> */}
           </div>
           <div className="flex-1 border-l border-blue-300 pl-8">
             <h2 className="text-xl font-bold mb-4 text-gray-900">Вход в систему</h2>
@@ -58,7 +62,7 @@ export default function Login() {
                   value={iin}
                   onChange={(e) => setIIN(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -68,7 +72,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <button
@@ -99,7 +103,7 @@ export default function Login() {
             Инструкция по работе с системой
           </Link>
         </div>
-        <p className="text-center text-gray-500 text-sm mt-4">&copy; AIU</p>
+        <p className="text-center text-gray-500 text-sm mt-4">&copy; AIU Science</p>
       </div>
     </div>
   );

@@ -11,6 +11,9 @@ export default function HomePage() {
           <p className="text-gray-700 mt-4">
             Добро пожаловать в систему оценки научной активности сотрудников университета.
           </p>
+          {/* <p className="text-gray-700 mt-4">
+            Добро пожаловать в систему оценки научной активности сотрудников университета.
+          </p> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -44,7 +47,7 @@ export default function HomePage() {
             Инструкция по работе с системой
           </Link>
         </div>
-        <p className="text-center text-gray-500 text-sm mt-4">&copy; AIU</p>
+        <p className="text-center text-gray-500 text-sm mt-4">&copy; AIU Science</p>
       </div>
     </div>
   );

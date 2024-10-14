@@ -2,12 +2,14 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import jwtDecode from 'jwt-decode';
 
 export default function Publications() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [publications, setPublications] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // Добавляем состояние для роли администратора
   const [newPublication, setNewPublication] = useState({
     authors: '',
     title: '',
@@ -23,10 +25,15 @@ export default function Publications() {
     if (!token) {
       router.push('/login');
     } else {
-      // Загрузка публикаций пользователя с бэкенда
+      const decodedToken = jwtDecode(token);
+      setIsAdmin(decodedToken.role === 'admin'); // Определяем роль пользователя
+
       const fetchPublications = async () => {
         try {
-          const response = await fetch('http://localhost:8080/api/user/publications', {
+          const response = await fetch(isAdmin
+            ? 'http://localhost:8080/api/admin/publications'
+            : 'http://localhost:8080/api/user/publications',
+          {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -50,7 +57,7 @@ export default function Publications() {
 
       fetchPublications();
     }
-  }, [router]);
+  }, [router, isAdmin]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -112,15 +119,18 @@ export default function Publications() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold">Публикации</h1>
-          <button
-            onClick={() => setIsAdding(true)}
-            className="py-2 px-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Добавить публикацию
-          </button>
+
+          {!isAdmin && ( // Только обычный пользователь может добавлять публикации
+            <button
+              onClick={() => setIsAdding(true)}
+              className="py-2 px-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Добавить публикацию
+            </button>
+          )}
         </div>
 
-        {isAdding && (
+        {isAdding && !isAdmin && (
           <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
             <h2 className="text-xl font-bold mb-4">Новая публикация</h2>
             {['authors', 'title', 'year', 'output', 'doi', 'percentile'].map((field) => (

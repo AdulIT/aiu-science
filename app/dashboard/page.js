@@ -173,13 +173,13 @@ export default function Dashboard() {
           {['scopusId', 'wosId', 'orcid', 'birthDate', 'phone', 'email', 'researchArea'].map((field) => (
             <div key={field}>
               <label className="block mb-1 font-medium text-gray-700">
-                {field === 'scopusId' && 'ID Scopus'}
-                {field === 'wosId' && 'ID WoS'}
+                {field === 'scopusId' && 'Scopus Author ID'}
+                {field === 'wosId' && 'Web of Science ResearcherID'}
                 {field === 'orcid' && 'ORCID'}
                 {field === 'birthDate' && 'Дата рождения'}
                 {field === 'phone' && 'Телефон'}
                 {field === 'email' && 'Email'}
-                {field === 'researchArea' && 'Научная область'}
+                {field === 'researchArea' && 'Научные интересы'}
               </label>
               {isEditing ? (
                 <input
