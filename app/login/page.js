@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
+import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Login() {
   const router = useRouter();
@@ -23,25 +24,31 @@ export default function Login() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        console.log(data.token);
+      if (response.ok && data.accessToken && data.refreshToken) {
+        // Сохранение токенов
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
 
         // Декодируем токен, чтобы получить роль пользователя
-        const decodedToken = jwtDecode(data.token);
+        const decodedToken = jwtDecode(data.accessToken);
         const userRole = decodedToken.role;
 
+        // Перенаправление на соответствующую страницу
         if (userRole === 'user') {
           router.push('/home-user');
-        } else {
+        } else if (userRole === 'admin') {
           router.push('/home-admin');
+        } else {
+          console.error('Неизвестная роль пользователя:', userRole);
+          alert('Ошибка авторизации. Неизвестная роль.');
         }
       } else {
-        alert(data.message);
+        console.error('Invalid response:', data);
+        alert(data.message || 'Ошибка авторизации. Попробуйте снова.');
       }
     } catch (error) {
       console.error('Error during login:', error);
-      alert('An error occurred. Please try again later.');
+      alert('Произошла ошибка. Попробуйте позже.');
     }
   };
 

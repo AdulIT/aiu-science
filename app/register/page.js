@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Register() {
   const [iin, setIIN] = useState('');

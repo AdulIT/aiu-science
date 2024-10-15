@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Dashboard() {
   const router = useRouter();

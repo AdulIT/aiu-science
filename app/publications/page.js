@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import jwtDecode from 'jwt-decode';
+// import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Publications() {
   const router = useRouter();
