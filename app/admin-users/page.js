@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {jwtDecode} from 'jwt-decode';
+import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -9,17 +11,28 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       router.push('/login');
     } else {
-      fetch('http://localhost:8080/api/admin/users', {
+      const decodedToken = jwtDecode(token);
+      // console.log("Декодированный токен:", decodedToken); // Отладочный вывод
+      const userRole = decodedToken.role;
+      console.log(`from admin page ${userRole}`);
+
+      if (userRole !== 'admin') {
+        alert('Доступ запрещен: только для администраторов');
+        router.push('/home-user'); // Перенаправляем обычного пользователя
+        return;
+      }
+
+      makeAuthenticatedRequest('http://localhost:8080/api/admin/users', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-      })
+      }, router)
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {

@@ -1,23 +1,34 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import Navbar from '../../components/Navbar';
 
 export default function AdminHome() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const accessToken = localStorage.getItem('accessToken');
+    
+    if (!accessToken) {
       router.push('/login');
+      return;
     }
 
-    const decodedToken = jwtDecode(token);
+    const decodedToken = jwtDecode(accessToken);
+    console.log("Decoded token:", decodedToken);
+
     if (decodedToken.role !== 'admin') {
       router.push('/home-user');
+    } else {
+      setIsLoading(false);
     }
   }, [router]);
+
+  if (isLoading) {
+    return <p>Загрузка...</p>;
+  }
 
   return (
     <div>

@@ -17,7 +17,7 @@ export async function refreshAccessToken() {
 
   const data = await response.json();
 
-  if (response.ok) {
+  if (response.ok && data.accessToken) {
     localStorage.setItem('accessToken', data.accessToken);
     return data.accessToken;
   } else {
@@ -26,15 +26,18 @@ export async function refreshAccessToken() {
   }
 }
 
-// Функция для выполнения аутентифицированных запросов
 export async function makeAuthenticatedRequest(endpoint, options = {}, router) {
   let accessToken = localStorage.getItem('accessToken');
 
   if (!accessToken) {
     accessToken = await refreshAccessToken();
     if (!accessToken) {
-      router.push('/login'); // Перенаправление на логин, если не удалось обновить токен
-      return null; // Возвращаем null, чтобы избежать выполнения запроса
+      if (router) {
+        router.push('/login');
+      } else {
+        window.location.href = '/login';
+      }
+      return;
     }
   }
 
@@ -43,16 +46,19 @@ export async function makeAuthenticatedRequest(endpoint, options = {}, router) {
     'Authorization': `Bearer ${accessToken}`,
   };
 
-  let response = await fetch(endpoint, options);
+  const response = await fetch(endpoint, options);
 
   if (response.status === 401) {
     accessToken = await refreshAccessToken();
     if (accessToken) {
       options.headers['Authorization'] = `Bearer ${accessToken}`;
-      response = await fetch(endpoint, options); // Повторный запрос с новым токеном
+      return fetch(endpoint, options);
     } else {
-      router.push('/login'); // Перенаправляем на логин, если не удалось обновить токен
-      return null; // Возвращаем null, чтобы избежать выполнения запроса
+      if (router) {
+        router.push('/login');
+      } else {
+        window.location.href = '/login';
+      }
     }
   }
 

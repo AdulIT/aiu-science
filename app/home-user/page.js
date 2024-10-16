@@ -1,23 +1,39 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode'; // Ensure this is correctly imported without curly braces
 import Navbar from '../../components/Navbar';
 
 export default function UserHome() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const accessToken = localStorage.getItem('accessToken');
+
+    if (!accessToken) {
       router.push('/login');
+      setIsLoading(false);
+      return;
     }
 
-    const decodedToken = jwtDecode(token);
-    if (decodedToken.role !== 'user') {
-      router.push('/admin');
+    try {
+      const decodedToken = jwtDecode(accessToken);
+      if (decodedToken.role !== 'user') {
+        router.push('/home-admin');
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Invalid token:', error);
+      router.push('/login');
+      setIsLoading(false);
     }
   }, [router]);
+
+  if (isLoading) {
+    return <p>Загрузка...</p>;
+  }
 
   return (
     <div>

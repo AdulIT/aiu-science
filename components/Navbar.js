@@ -16,7 +16,7 @@ export default function Navbar({ role }) {
             Резюме
           </Link>
           {role === 'admin' && (
-            <Link href="/users" className={`text-white px-3 py-2 rounded-md text-sm font-medium ${pathname === '/users' ? 'bg-gray-900' : ''}`}>
+            <Link href="/admin-users" className={`text-white px-3 py-2 rounded-md text-sm font-medium ${pathname === '/admin-users' ? 'bg-gray-900' : ''}`}>
               Все сотрудники
             </Link>
           )}

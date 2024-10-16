@@ -27,13 +27,13 @@ export default function Dashboard() {
     } else {
       const fetchUserData = async () => {
         try {
-          const response = await fetch('http://localhost:8080/api/user/profile', {
+          const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/profile', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-          });
+          }, router);
       
           if (response.ok) {
             const data = await response.json();
@@ -67,13 +67,13 @@ export default function Dashboard() {
         const formData = new FormData();
         formData.append('profilePhoto', file);
 
-        const response = await fetch('http://localhost:8080/api/user/uploadPhoto', {
+        const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/uploadPhoto', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
           },
           body: formData,
-        });
+        }, router);
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -98,7 +98,7 @@ export default function Dashboard() {
         return;
       }
 
-      const response = await fetch('http://localhost:8080/api/user/update', {
+      const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/update', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export default function Dashboard() {
           email: userData.email,
           researchArea: userData.researchArea,
         }),
-      });
+      }, router);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -128,10 +128,10 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/login');
-  };
+  // const handleLogout = () => {
+  //   localStorage.removeItem('token');
+  //   router.push('/login');
+  // };
 
   if (isLoading) {
     return (
@@ -146,7 +146,7 @@ export default function Dashboard() {
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
         <div className="mb-4">
-          <Link href="/" className="text-blue-500 hover:underline">
+          <Link href="/home-user" className="text-blue-500 hover:underline">
             Главная
           </Link>
         </div>

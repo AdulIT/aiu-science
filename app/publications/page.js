@@ -2,8 +2,8 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import jwtDecode from 'jwt-decode';
-// import { makeAuthenticatedRequest } from '../lib/api';
+import {jwtDecode} from 'jwt-decode';
+import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Publications() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function Publications() {
 
       const fetchPublications = async () => {
         try {
-          const response = await fetch(isAdmin
+          const response = await makeAuthenticatedRequest(isAdmin
             ? 'http://localhost:8080/api/admin/publications'
             : 'http://localhost:8080/api/user/publications',
           {
@@ -40,7 +40,7 @@ export default function Publications() {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-          });
+          }, router);
 
           if (response.ok) {
             const data = await response.json();
@@ -115,9 +115,15 @@ export default function Publications() {
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <div className="mb-4">
-            <Link href="/" className="text-blue-500 hover:underline">
+            <Link href="/home-user" className="text-blue-500 hover:underline">
               Главная
             </Link>
+            {/* <button
+              onClick={handleLogout}
+              className="py-2 px-4 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Выйти
+            </button> */}
           </div>
           <h1 className="text-2xl font-bold">Публикации</h1>
 

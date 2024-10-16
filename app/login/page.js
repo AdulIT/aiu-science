@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';  // Corrected import
 import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Login() {
@@ -12,34 +12,41 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await makeAuthenticatedRequest('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ iin, password }),
-      });
-
+      }, router);
+  
       const data = await response.json();
-
-      if (response.ok && data.accessToken && data.refreshToken) {
-        // Сохранение токенов
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-
-        // Декодируем токен, чтобы получить роль пользователя
-        const decodedToken = jwtDecode(data.accessToken);
+      console.log("Ответ от сервера:", data); // Debugging: Check the server response
+  
+      if (response.ok && data.accessToken) {
+        const accessToken = data.accessToken;
+        const refreshToken = data.refreshToken;
+  
+        // Save tokens
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+  
+        // Decode the token to get user info
+        const decodedToken = jwtDecode(accessToken);
+        console.log("Декодированный токен:", decodedToken); // Debugging: Check the decoded token
+  
         const userRole = decodedToken.role;
-
-        // Перенаправление на соответствующую страницу
-        if (userRole === 'user') {
-          router.push('/home-user');
-        } else if (userRole === 'admin') {
+        console.log("Роль пользователя:", userRole); // Debugging: Check the user role
+  
+        // Redirect based on the user's role
+        if (userRole === 'admin') {
           router.push('/home-admin');
+        } else if (userRole === 'user') {
+          router.push('/home-user');  // Ensure this redirection works
         } else {
-          console.error('Неизвестная роль пользователя:', userRole);
+          console.error('Unknown user role:', userRole);
           alert('Ошибка авторизации. Неизвестная роль.');
         }
       } else {
@@ -102,10 +109,6 @@ export default function Login() {
             Сайт AIU
           </Link>{' '}
           |{' '}
-          <Link className="text-sm hover:underline" href="/">
-            {/* Система "Univer" */}
-          </Link>{' '}
-          {/* |{' '} */}
           <Link className="text-sm hover:underline" href="/">
             Инструкция по работе с системой
           </Link>
