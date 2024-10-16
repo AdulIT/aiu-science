@@ -29,16 +29,9 @@ export async function refreshAccessToken() {
 export async function makeAuthenticatedRequest(endpoint, options = {}, router) {
   let accessToken = localStorage.getItem('accessToken');
 
+  // Если accessToken отсутствует, не пытаемся обновить токен, просто возвращаем null
   if (!accessToken) {
-    accessToken = await refreshAccessToken();
-    if (!accessToken) {
-      if (router) {
-        router.push('/login');
-      } else {
-        window.location.href = '/login';
-      }
-      return;
-    }
+    return null; // Не делаем запрос с отсутствующим токеном
   }
 
   options.headers = {
@@ -48,17 +41,20 @@ export async function makeAuthenticatedRequest(endpoint, options = {}, router) {
 
   const response = await fetch(endpoint, options);
 
+  // Если токен недействителен, пробуем обновить токен
   if (response.status === 401) {
-    accessToken = await refreshAccessToken();
+    accessToken = await refreshAccessToken(); // Пробуем обновить токен
     if (accessToken) {
       options.headers['Authorization'] = `Bearer ${accessToken}`;
-      return fetch(endpoint, options);
+      return fetch(endpoint, options); // Повторяем запрос с обновленным токеном
     } else {
+      // Перенаправляем на логин, если не удалось обновить токен
       if (router) {
         router.push('/login');
       } else {
         window.location.href = '/login';
       }
+      return null;
     }
   }
 

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { jwtDecode } from 'jwt-decode';  // Corrected import
+import {jwtDecode} from 'jwt-decode'; // исправляем вызов импорта
 import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Login() {
@@ -12,50 +12,50 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
-      const response = await makeAuthenticatedRequest('http://localhost:8080/api/auth/login', {
+      // Выполняем запрос на сервер для входа
+      const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ iin, password }),
-      }, router);
-  
+      });
+
+      // Проверяем, что response не является null
+      if (!response) {
+        throw new Error('Ответ от сервера отсутствует.');
+      }
+
+      // Проверяем статус ответа
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Ошибка: ${errorData.message || 'Невозможно выполнить запрос'}`);
+      }
+
       const data = await response.json();
-      console.log("Ответ от сервера:", data); // Debugging: Check the server response
-  
-      if (response.ok && data.accessToken) {
-        const accessToken = data.accessToken;
-        const refreshToken = data.refreshToken;
-  
-        // Save tokens
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-  
-        // Decode the token to get user info
-        const decodedToken = jwtDecode(accessToken);
-        console.log("Декодированный токен:", decodedToken); // Debugging: Check the decoded token
-  
+
+      // Сохраняем токены в localStorage
+      if (data.accessToken && data.refreshToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+
+        const decodedToken = jwtDecode(data.accessToken);
         const userRole = decodedToken.role;
-        console.log("Роль пользователя:", userRole); // Debugging: Check the user role
-  
-        // Redirect based on the user's role
+
+        // Перенаправляем в зависимости от роли пользователя
         if (userRole === 'admin') {
           router.push('/home-admin');
-        } else if (userRole === 'user') {
-          router.push('/home-user');  // Ensure this redirection works
         } else {
-          console.error('Unknown user role:', userRole);
-          alert('Ошибка авторизации. Неизвестная роль.');
+          router.push('/home-user');
         }
       } else {
-        console.error('Invalid response:', data);
-        alert(data.message || 'Ошибка авторизации. Попробуйте снова.');
+        throw new Error('Токены не были получены');
       }
     } catch (error) {
-      console.error('Error during login:', error);
-      alert('Произошла ошибка. Попробуйте позже.');
+      console.error('Error during login:', error.message);
+      alert(error.message || 'Произошла ошибка. Попробуйте позже.');
     }
   };
 
@@ -109,6 +109,10 @@ export default function Login() {
             Сайт AIU
           </Link>{' '}
           |{' '}
+          <Link className="text-sm hover:underline" href="/">
+            {/* Система "Univer" */}
+          </Link>{' '}
+          {/* |{' '} */}
           <Link className="text-sm hover:underline" href="/">
             Инструкция по работе с системой
           </Link>

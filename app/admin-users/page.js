@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {jwtDecode} from 'jwt-decode';
 import { makeAuthenticatedRequest } from '../lib/api';
+import Navbar from '../../components/Navbar';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -56,32 +57,35 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold mb-4">Административная панель</h1>
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              <th className="w-1/3 px-4 py-2">ИИН</th>
-              <th className="w-1/3 px-4 py-2">Роль</th>
-              <th className="w-1/3 px-4 py-2">Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.iin} className="text-center">
-                <td className="border px-4 py-2">{user.iin}</td>
-                <td className="border px-4 py-2">{user.role}</td>
-                <td className="border px-4 py-2">
-                  <Link href={`/admin/user/${user.iin}`} className="text-blue-500 hover:underline">
-                    Просмотр профиля
-                  </Link>
-                </td>
+    <>
+      <Navbar role="admin" />
+      <div className="min-h-screen bg-gray-100 p-8">
+        <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6">
+          <h1 className="text-2xl font-bold mb-4">Административная панель</h1>
+          <table className="min-w-full bg-white">
+            <thead>
+              <tr>
+                <th className="w-1/3 px-4 py-2">ИИН</th>
+                <th className="w-1/3 px-4 py-2">Роль</th>
+                <th className="w-1/3 px-4 py-2">Действия</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.iin} className="text-center">
+                  <td className="border px-4 py-2">{user.iin}</td>
+                  <td className="border px-4 py-2">{user.role}</td>
+                  <td className="border px-4 py-2">
+                    <Link href={`/admin/user/${user.iin}`} className="text-blue-500 hover:underline">
+                      Просмотр профиля
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
