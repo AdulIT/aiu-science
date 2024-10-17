@@ -123,37 +123,40 @@ export default function Publications() {
     <>
       <Navbar role={isAdmin ? 'admin' : 'user'} />
       <div className="min-h-screen bg-gray-100 p-8">
-        {/* <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6"> */}
-          <div className="flex justify-between items-center mb-4">
-            {/* <div className="mb-4">
-              <Link href={isAdmin ? "/home-admin" : "/home-user"} className="text-blue-500 hover:underline">
-                Главная
-              </Link>
-            </div> */}
-            <h1 className="text-2xl font-bold">Публикации</h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">Публикации</h1>
 
-            {!isAdmin && (
-              <button
-                onClick={() => setIsAdding(true)}
-                className="py-2 px-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Добавить публикацию
-              </button>
-            )}
-          </div>
+          {!isAdmin && (
+            <button
+              onClick={() => setIsAdding(true)}
+              className="py-2 px-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Добавить публикацию
+            </button>
+          )}
+        </div>
 
-          {isAdding && !isAdmin && (
-            <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
-              <h2 className="text-xl font-bold mb-4">Новая публикация</h2>
-              {['authors', 'title', 'year', 'output', 'doi'].map((field) => (
-                <div key={field} className="mb-4">
-                  <label className="block mb-1 font-medium text-gray-700">
-                    {field === 'authors' && 'Авторы'}
-                    {field === 'title' && 'Название статьи'}
-                    {field === 'year' && 'Год'}
-                    {field === 'output' && 'Выходные данные'}
-                    {field === 'doi' && 'Ссылки, DOI'}
-                  </label>
+        {isAdding && !isAdmin && (
+          <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
+            <h2 className="text-xl font-bold mb-4">Новая публикация</h2>
+            {['authors', 'title', 'year', 'output', 'doi'].map((field) => (
+              <div key={field} className="mb-4">
+                <label className="block mb-1 font-medium text-gray-700">
+                  {field === 'authors' && 'Авторы'}
+                  {field === 'title' && 'Название статьи'}
+                  {field === 'year' && 'Год'}
+                  {field === 'output' && 'Выходные данные'}
+                  {field === 'doi' && 'Ссылки, DOI'}
+                </label>
+                {field === 'output' ? (
+                  <textarea
+                    name={field}
+                    value={newPublication[field]}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3} // Устанавливаем высоту для textarea
+                  />
+                ) : (
                   <input
                     type="text"
                     name={field}
@@ -161,33 +164,33 @@ export default function Publications() {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                </div>
-              ))}
-              <button
-                onClick={handleAddPublication}
-                className="py-2 px-4 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                Сохранить публикацию
-              </button>
-            </div>
-          )}
-
-          <div>
-            {publications.length > 0 ? (
-              publications.map((publication, index) => (
-                <div key={index} className="mb-4 p-4 border border-gray-300 rounded-lg bg-white">
-                  <p><strong>Авторы:</strong> {publication.authors}</p>
-                  <p><strong>Название статьи:</strong> {publication.title}</p>
-                  <p><strong>Год:</strong> {publication.year}</p>
-                  <p><strong>Выходные данные:</strong> {publication.output}</p>
-                  <p><strong>Ссылки, DOI:</strong> {publication.doi}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-600">У вас пока нет публикаций.</p>
-            )}
+                )}
+              </div>
+            ))}
+            <button
+              onClick={handleAddPublication}
+              className="py-2 px-4 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              Сохранить публикацию
+            </button>
           </div>
-        {/* </div> */}
+        )}
+
+        <div>
+          {publications.length > 0 ? (
+            publications.map((publication, index) => (
+              <div key={index} className="mb-4 p-4 border border-gray-300 rounded-lg bg-white">
+                <p><strong>Авторы:</strong> {publication.authors}</p>
+                <p><strong>Название статьи:</strong> {publication.title}</p>
+                <p><strong>Год:</strong> {publication.year}</p>
+                <p><strong>Выходные данные:</strong> {publication.output}</p>
+                <p><strong>Ссылки, DOI:</strong> {publication.doi}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-600">У вас пока нет публикаций.</p>
+          )}
+        </div>
       </div>
     </>
   );
