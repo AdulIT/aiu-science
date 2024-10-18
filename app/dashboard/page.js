@@ -4,14 +4,15 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { makeAuthenticatedRequest } from '../lib/api';
 import Navbar from '../../components/Navbar';
+import { jwtDecode } from 'jwt-decode';
 
-export default function Dashboard() {
+export default function Dashboard({ params }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userData, setUserData] = useState({
-    fullName: '', // Добавлено поле для ФИО
+    fullName: '',
     profilePhoto: '',
     scopusId: '',
     wosId: '',
@@ -20,18 +21,26 @@ export default function Dashboard() {
     phone: '',
     email: '',
     researchArea: '',
-    higherSchool: '', // Поле для выбора высшей школы
+    higherSchool: '',
+    role: '', // Добавлено поле для роли
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
   
     if (!token) {
       router.push('/login');
     } else {
       const fetchUserData = async () => {
         try {
-          const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/profile', {
+          const decodedToken = jwtDecode(token);
+          setIsAdmin(decodedToken.role === 'admin'); // Определяем, является ли пользователь админом
+
+          const endpoint = isAdmin && params?.iin 
+            ? `http://localhost:8080/api/admin/user/${params.iin}` 
+            : 'http://localhost:8080/api/user/profile'; // Если админ, получаем данные другого пользователя
+
+          const response = await makeAuthenticatedRequest(endpoint, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -56,7 +65,7 @@ export default function Dashboard() {
   
       fetchUserData();
     }
-  }, [router]);
+  }, [router, isAdmin, params?.iin]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,7 +76,7 @@ export default function Dashboard() {
     const file = e.target.files[0];
     if (file) {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('accessToken');
         const formData = new FormData();
         formData.append('profilePhoto', file);
 
@@ -96,20 +105,20 @@ export default function Dashboard() {
 
   const handleSave = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken'); // Извлекаем accessToken
+      const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         alert('Ошибка авторизации. Пожалуйста, войдите снова.');
         return;
       }
-  
+
       const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/update', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`, // Используем accessToken для аутентификации
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          fullName: userData.fullName, // Добавляем ФИО
+          fullName: userData.fullName,
           scopusId: userData.scopusId,
           wosId: userData.wosId,
           orcid: userData.orcid,
@@ -117,7 +126,7 @@ export default function Dashboard() {
           phone: userData.phone,
           email: userData.email,
           researchArea: userData.researchArea,
-          higherSchool: userData.higherSchool, // Добавляем высшую школу
+          higherSchool: userData.higherSchool,
         }),
       }, router);
   
@@ -134,11 +143,11 @@ export default function Dashboard() {
     }
   };
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem('accessToken');
-  //   localStorage.removeItem('refreshToken');
-  //   router.push('/login');
-  // };
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    router.push('/login');
+  };
 
   if (isLoading) {
     return (
@@ -150,23 +159,8 @@ export default function Dashboard() {
 
   return (
     <>
-      <Navbar role={'user'} />
+      <Navbar role={isAdmin ? 'admin' : 'user'} />
       <div className="min-h-screen bg-gray-100 p-8">
-        {/* <div className="flex justify-between items-center mb-4">
-          <div className="mb-4">
-            <Link href="/home-user" className="text-blue-500 hover:underline">
-              Главная
-            </Link>
-          </div>
-          <h1 className="text-2xl font-bold">Личный кабинет</h1>
-          <button
-            onClick={handleLogout}
-            className="py-2 px-4 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            Выйти
-          </button>
-        </div> */}
-
         <div className="flex flex-col items-center mb-6">
           <div className="w-300 h-300 mb-4 rounded-full overflow-hidden border-4 border-gray-300">
             <img
@@ -175,14 +169,16 @@ export default function Dashboard() {
               className="w-full h-full object-cover"
             />
           </div>
-          <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-            Загрузить фотографию
-            <input
-              type="file"
-              onChange={handleProfilePhotoChange}
-              className="hidden"
-            />
-          </label>
+          {isEditing && !isAdmin && ( // Если не админ, можно менять фото
+            <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+              Загрузить фотографию
+              <input
+                type="file"
+                onChange={handleProfilePhotoChange}
+                className="hidden"
+              />
+            </label>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -198,7 +194,7 @@ export default function Dashboard() {
                 {field === 'email' && 'Email'}
                 {field === 'researchArea' && 'Научные интересы'}
               </label>
-              {isEditing ? (
+              {isEditing && !isAdmin ? (
                 field === 'researchArea' ? (
                   <textarea
                     name={field}
@@ -223,10 +219,19 @@ export default function Dashboard() {
             </div>
           ))}
 
-          {/* Выбор высшей школы */}
+          {/* Поле для роли (только админ видит) */}
+          {isAdmin && (
+            <div>
+              <label className="block mb-1 font-medium text-gray-700">Роль</label>
+              <p className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                {userData.role || 'Не указано'}
+              </p>
+            </div>
+          )}
+
           <div>
             <label className="block mb-1 font-medium text-gray-700">Высшая школа</label>
-            {isEditing ? (
+            {isEditing && !isAdmin ? (
               <select
                 name="higherSchool"
                 value={userData.higherSchool}
@@ -234,7 +239,7 @@ export default function Dashboard() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Выберите школу</option>
-                <option value="Школа инженерии">Высшая Школа Инженерии и Информационных Технологии</option>
+                <option value="Школа инженерии">Высшая Школа Инженерии и Информационных Технологий</option>
                 <option value="Школа экономики">Высшая Школа Экономики</option>
                 <option value="Школа права">Высшая Школа Права</option>
                 <option value="Педагогический институт">Педагогический институт</option>
@@ -249,21 +254,21 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {isEditing ? (
+        {!isAdmin && isEditing ? (
           <button
             onClick={handleSave}
             className="mt-6 py-2 px-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Сохранить изменения
           </button>
-        ) : (
+        ) : !isAdmin ? (
           <button
             onClick={() => setIsEditing(true)}
             className="mt-6 py-2 px-4 text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
           >
             Редактировать
           </button>
-        )}
+        ) : null}
       </div>
     </>
   );

@@ -76,9 +76,9 @@ export default function AdminPage() {
                   <td className="border px-4 py-2">{user.iin}</td>
                   <td className="border px-4 py-2">{user.role}</td>
                   <td className="border px-4 py-2">
-                    <Link href={`/admin/user/${user.iin}`} className="text-blue-500 hover:underline">
-                      Просмотр профиля
-                    </Link>
+                  <Link href={`/admin/user/${user.iin}`} className="text-blue-500 hover:underline">
+                    Просмотр профиля
+                  </Link>
                   </td>
                 </tr>
               ))}
