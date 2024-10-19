@@ -16,43 +16,62 @@ export default function AdminPublications() {
   const [selectedUser, setSelectedUser] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
-    const decodedToken = jwtDecode(token);
-    if (decodedToken.role !== 'admin') {
-      router.push('/home-user');
-      return;
-    }
-
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+  
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.role !== 'admin') {
+          router.push('/home-user');
+          return;
+        }
+  
         const response = await makeAuthenticatedRequest(
           'http://localhost:8080/api/admin/publications', 
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } }, 
           router
         );
-        
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }      
+  
         if (response.ok) {
           const data = await response.json();
           setPublications(data);
           setFilteredPublications(data); // По умолчанию показываем все публикации
         } else {
           console.error('Ошибка при загрузке публикаций');
-          router.push('/login');
+          alert('Не удалось загрузить публикации');
         }
       } catch (error) {
         console.error('Ошибка при загрузке публикаций:', error);
-        router.push('/login');
+        alert('Произошла ошибка');
       } finally {
         setIsLoading(false);
       }
     };
-
+  
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await makeAuthenticatedRequest('http://localhost:8080/api/admin/users', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` }
+        }, router);
+        const data = await response.json();
+        setUsers(data.users);
+      } catch (error) {
+        console.error('Ошибка при загрузке пользователей:', error);
+      }
+    };
+  
     fetchData();
+    fetchUsers();
   }, [router]);
 
   const handleYearChange = (e) => {
@@ -72,7 +91,7 @@ export default function AdminPublications() {
     if (userId === '') {
       setFilteredPublications(publications);
     } else {
-      const filtered = publications.filter((pub) => pub.userId === userId);
+      const filtered = publications.filter((pub) => pub.iin === userId);
       setFilteredPublications(filtered);
     }
   };
@@ -82,15 +101,16 @@ export default function AdminPublications() {
       const token = localStorage.getItem('accessToken');
       if (!token) {
         alert('Авторизуйтесь перед генерацией отчета.');
+        router.push('/login');
         return;
       }
   
-      const response = await fetch('http://localhost:8080/api/admin/generateAllPublicationsReport', {
+      const response = await makeAuthenticatedRequest('http://localhost:8080/api/admin/generateAllPublicationsReport', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
+      }, router);
   
       if (response.ok) {
         const blob = await response.blob();
@@ -110,7 +130,7 @@ export default function AdminPublications() {
     }
   };
   
-  const generateUserReport = async (userIin) => {
+  const generateUserReport = async (iin) => {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -118,14 +138,14 @@ export default function AdminPublications() {
         return;
       }
   
-      const response = await fetch('/api/admin/generateUserReport', {
+      const response = await makeAuthenticatedRequest('http://localhost:8080/api/admin/generateUserReport', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ iin: userIin }), // Sending the IIN as a parameter
-      });
+        body: JSON.stringify({ iin }), // Sending the IIN as a parameter
+      }, router);
   
       if (!response.ok) {
         throw new Error('Failed to generate report');
@@ -135,7 +155,7 @@ export default function AdminPublications() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${userIin}_report.docx`); // Filename based on user IIN
+      link.setAttribute('download', `${iin}_report.docx`); // Filename based on user IIN
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -181,10 +201,10 @@ export default function AdminPublications() {
           <div>
             <label>Фильтр по пользователю:</label>
             <select value={selectedUser} onChange={handleUserChange} className="px-3 py-2 border rounded-lg">
-              <option value="">Все пользователи</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>{user.name}</option>
-              ))}
+                <option value="">Все пользователи</option>
+                {Array.isArray(users) && users.length > 0 && users.map((user, index) => (
+                    <option key={index} value={user.iin}>{user.fullame}</option>
+                ))}
             </select>
           </div>
         </div>
@@ -193,6 +213,7 @@ export default function AdminPublications() {
           {filteredPublications.length > 0 ? (
             filteredPublications.map((publication, index) => (
               <div key={index} className="mb-4 p-4 border border-gray-300 rounded-lg bg-white">
+                {/* {console.log(filteredPublications)} */}
                 <p><strong>Авторы:</strong> {publication.authors}</p>
                 <p><strong>Название статьи:</strong> {publication.title}</p>
                 <p><strong>Год:</strong> {publication.year}</p>
@@ -200,12 +221,12 @@ export default function AdminPublications() {
                 {publication.doi && <p><strong>Ссылки, DOI:</strong> {publication.doi}</p>}
                 {publication.isbn && <p><strong>ISBN:</strong> {publication.isbn}</p>}
                 <p><strong>Пользователь:</strong> 
-                  <Link href={`/api/admin/user/${publication.userId}`} className="text-blue-500 hover:underline">
+                  <Link href={`/api/admin/user/${publication.iin}`} className="text-blue-500 hover:underline">
                     {publication.userName}
                   </Link>
                 </p>
                 <button
-                  onClick={() => generateUserReport(publication.userId)}
+                  onClick={() => generateUserReport(publication.iin)}
                   className="py-1 px-3 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none"
                 >
                   Генерировать отчет по пользователю

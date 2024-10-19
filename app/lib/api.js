@@ -7,23 +7,37 @@ export async function refreshAccessToken() {
     return null;
   }
 
-  const response = await fetch('http://localhost:8080/api/auth/refresh-token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ refreshToken }),
-  });
+  try {
+    const response = await fetch('http://localhost:8080/api/auth/refresh-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
 
-  const data = await response.json();
-
-  if (response.ok && data.accessToken) {
-    localStorage.setItem('accessToken', data.accessToken);
-    return data.accessToken;
-  } else {
-    console.error('Ошибка при обновлении Access Token:', data.message);
-    return null;
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem('accessToken', data.accessToken);
+      return data.accessToken;
+    } else {
+      throw new Error('Ошибка при обновлении токена');
+    }
+  } catch (error) {
+    console.error('Ошибка при обновлении токена:', error);
+    // Если обновить токен не удалось, перенаправляем на страницу логина
+    router.push('/login');
   }
+
+  // const data = await response.json();
+
+  // if (response.ok && data.accessToken) {
+  //   localStorage.setItem('accessToken', data.accessToken);
+  //   return data.accessToken;
+  // } else {
+  //   console.error('Ошибка при обновлении Access Token:', data.message);
+  //   return null;
+  // }
 }
 
 export async function makeAuthenticatedRequest(endpoint, options = {}, router) {
