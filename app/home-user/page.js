@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { jwtDecode } from 'jwt-decode'; // Ensure this is correctly imported without curly braces
+import { jwtDecode } from 'jwt-decode';
 import Navbar from '../../components/Navbar';
 
 export default function UserHome() {

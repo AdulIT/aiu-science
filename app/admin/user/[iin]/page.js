@@ -4,13 +4,23 @@ import { useRouter, useParams } from 'next/navigation';
 import { makeAuthenticatedRequest } from '../../../lib/api';
 import Navbar from '../../../../components/Navbar';
 
+const publicationTypeMap = {
+  scopus_wos: 'Научные труды (Scopus/Web of Science)',
+  koknvo: 'КОКНВО',
+  conference: 'Материалы конференций',
+  articles: 'Статьи РК и не включенные в Scopus/WoS',
+  books: 'Монографии, книги и учебные материалы',
+  patents: 'Патенты, авторское свидетельство',
+};
+
 export default function UserProfile() {
   const router = useRouter();
   const params = useParams();
-  const iin = params.iin; // Получаем ИИН из URL
+  const iin = params.iin;
   const [user, setUser] = useState(null);
+  const [publications, setPublications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('profile'); // Для переключения вкладок
+  const [activeTab, setActiveTab] = useState('profile');
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -22,14 +32,14 @@ export default function UserProfile() {
     const fetchUserProfile = async () => {
       try {
         const response = await makeAuthenticatedRequest(
-          `http://localhost:8080/api/admin/user/${iin}`, // Запрашиваем данные пользователя по ИИН
+          `http://localhost:8080/api/admin/user/${iin}`,
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
           router
         );
         
         if (response.ok) {
           const data = await response.json();
-          setUser(data.user); // Устанавливаем данные пользователя в состоянии
+          setUser(data.user);
         } else {
           console.error('Ошибка при загрузке профиля пользователя');
           router.push('/admin-users');
@@ -42,7 +52,27 @@ export default function UserProfile() {
       }
     };
 
+    const fetchUserPublications = async () => {
+      try {
+        const response = await makeAuthenticatedRequest(
+          `http://localhost:8080/api/user/${iin}/publications`,
+          { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
+          router
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setPublications(data.publications);
+        } else {
+          console.error('Ошибка при загрузке публикаций');
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке публикаций:', error);
+      }
+    };
+
     fetchUserProfile();
+    fetchUserPublications();
   }, [router, iin]);
 
   // Функция для генерации отчета
@@ -76,6 +106,25 @@ export default function UserProfile() {
     } catch (error) {
       console.error('Ошибка при генерации отчета:', error);
       alert('Произошла ошибка при генерации отчета.');
+    }
+  };
+
+  const generateResume = async (format) => {
+    try {
+      const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/generateResume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ iin }),
+      }, router);
+      
+      const data = await response.json();
+      if (format === 'docx') {
+        window.open(`http://localhost:8080/api/user/downloadResumeDocx?path=${data.docxPath}`);
+      } else if (format === 'pdf') {
+        window.open(`http://localhost:8080/api/user/downloadResumePdf?path=${data.pdfPath}`);
+      }
+    } catch (error) {
+      console.error('Error generating resume:', error);
     }
   };
 
@@ -151,25 +200,57 @@ export default function UserProfile() {
           )}
 
           {activeTab === 'resume' && (
+           <>
             <div>
-              <p>Здесь будет резюме пользователя.</p>
+                <p>Здесь будет резюме пользователя.</p>
+              </div>
+              <div className="mt-6">
+              <button
+                onClick={() => generateResume('pdf')}
+                className="py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Скачать резюме PDF
+              </button>
+              <button
+                onClick={() => generateResume('docx')}
+                className="py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Скачать резюме Word
+              </button>
             </div>
+           </>
           )}
 
           {activeTab === 'publications' && (
             <div>
-              <p>Здесь будут отображены публикации пользователя.</p>
+              {publications.length > 0 ? (
+              publications.map((publication, index) => (
+                <div key={index} className="mb-4 p-4 border border-gray-300 rounded-lg bg-white">
+                  <p><strong>Тип публикации:</strong> {publicationTypeMap[publication.publicationType]}</p>
+                  <p><strong>Авторы:</strong> {publication.authors}</p>
+                  <p><strong>Название статьи:</strong> {publication.title}</p>
+                  <p><strong>Год:</strong> {publication.year}</p>
+                  <p><strong>Выходные данные:</strong> {publication.output}</p>
+                  {publication.doi && <p><strong>Ссылки, DOI:</strong> {publication.doi}</p>}
+                  {publication.isbn && <p><strong>ISBN:</strong> {publication.isbn}</p>}
+                  {publication.file && (
+                  <p>
+                    <strong>Файл:</strong> <a href={`http://localhost:8080/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
+                  </p>
+                )}
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-600">Нет публикаций для отображения.</p>
+            )}
+              <button
+                  onClick={generateReport}
+                  className="py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                Скачать отчет
+              </button>
             </div>
           )}
-
-          <div className="mt-6">
-            <button
-              onClick={generateReport}
-              className="py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              Скачать отчет
-            </button>
-          </div>
         </div>
       </div>
     </>

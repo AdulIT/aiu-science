@@ -6,6 +6,15 @@ import Navbar from '../../components/Navbar';
 import Link from 'next/link';
 import { jwtDecode } from 'jwt-decode';
 
+const publicationTypeMap = {
+    scopus_wos: 'Научные труды (Scopus/Web of Science)',
+    koknvo: 'КОКНВО',
+    conference: 'Материалы конференций',
+    articles: 'Статьи РК и не включенные в Scopus/WoS',
+    books: 'Монографии, книги и учебные материалы',
+    patents: 'Патенты, авторское свидетельство',
+  };
+
 export default function AdminPublications() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -203,7 +212,7 @@ export default function AdminPublications() {
             <select value={selectedUser} onChange={handleUserChange} className="px-3 py-2 border rounded-lg">
                 <option value="">Все пользователи</option>
                 {Array.isArray(users) && users.length > 0 && users.map((user, index) => (
-                    <option key={index} value={user.iin}>{user.fullame}</option>
+                    <option key={index} value={user.iin}>{user.fullName}</option>
                 ))}
             </select>
           </div>
@@ -214,6 +223,7 @@ export default function AdminPublications() {
             filteredPublications.map((publication, index) => (
               <div key={index} className="mb-4 p-4 border border-gray-300 rounded-lg bg-white">
                 {/* {console.log(filteredPublications)} */}
+                <p><strong>Тип публикации:</strong> {publicationTypeMap[publication.publicationType]}</p>
                 <p><strong>Авторы:</strong> {publication.authors}</p>
                 <p><strong>Название статьи:</strong> {publication.title}</p>
                 <p><strong>Год:</strong> {publication.year}</p>
@@ -221,10 +231,15 @@ export default function AdminPublications() {
                 {publication.doi && <p><strong>Ссылки, DOI:</strong> {publication.doi}</p>}
                 {publication.isbn && <p><strong>ISBN:</strong> {publication.isbn}</p>}
                 <p><strong>Пользователь:</strong> 
-                  <Link href={`/api/admin/user/${publication.iin}`} className="text-blue-500 hover:underline">
-                    {publication.userName}
+                  <Link href={`/admin/user/${publication.iin}`} className="text-blue-500 hover:underline">
+                    {publication.iin}
                   </Link>
                 </p>
+                {publication.file && (
+                  <p>
+                    <strong>Файл:</strong> <a target="_blank" href={`http://localhost:8080/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
+                  </p>
+                )}
                 <button
                   onClick={() => generateUserReport(publication.iin)}
                   className="py-1 px-3 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none"

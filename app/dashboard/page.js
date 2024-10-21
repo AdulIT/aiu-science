@@ -1,7 +1,6 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { makeAuthenticatedRequest } from '../lib/api';
 import Navbar from '../../components/Navbar';
 import { jwtDecode } from 'jwt-decode';
@@ -22,7 +21,7 @@ export default function Dashboard({ params }) {
     email: '',
     researchArea: '',
     higherSchool: '',
-    role: '', // Добавлено поле для роли
+    role: '',
   });
 
   useEffect(() => {
@@ -34,7 +33,7 @@ export default function Dashboard({ params }) {
       const fetchUserData = async () => {
         try {
           const decodedToken = jwtDecode(token);
-          setIsAdmin(decodedToken.role === 'admin'); // Определяем, является ли пользователь админом
+          setIsAdmin(decodedToken.role === 'admin');
 
           const endpoint = isAdmin && params?.iin 
             ? `http://localhost:8080/api/admin/user/${params.iin}` 

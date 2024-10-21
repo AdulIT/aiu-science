@@ -22,10 +22,10 @@ export default function Navbar({ role }) {
           </Link>
 
           {/* Ссылки для всех ролей */}
-          <Link href={role === 'admin' ? "admin-publications" : "/publications"} className={`text-white px-3 py-2 rounded-md text-sm font-medium ${pathname === '/publications' ? 'bg-gray-900' : ''}`}>
+          <Link href={role === 'admin' ? "/admin-publications" : "/publications"} className={`text-white px-3 py-2 rounded-md text-sm font-medium ${pathname === '/publications' ? 'bg-gray-900' : ''}`}>
             Публикации
           </Link>
-          <Link href="/resumes" className={`text-white px-3 py-2 rounded-md text-sm font-medium ${pathname === '/resumes' ? 'bg-gray-900' : ''}`}>
+          <Link href="/resume" className={`text-white px-3 py-2 rounded-md text-sm font-medium ${pathname === '/resumes' ? 'bg-gray-900' : ''}`}>
             Резюме
           </Link>
 
