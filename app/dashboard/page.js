@@ -238,9 +238,9 @@ export default function Dashboard({ params }) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Выберите школу</option>
-                <option value="Школа инженерии">Высшая Школа Инженерии и Информационных Технологий</option>
-                <option value="Школа экономики">Высшая Школа Экономики</option>
-                <option value="Школа права">Высшая Школа Права</option>
+                <option value="Высшая школа информационных технологий и инженерии">Высшая школа информационных технологий и инженерии</option>
+                <option value="Высшая школа экономики">Высшая школа экономики</option>
+                <option value="Высшая школа права">Высшая Школа Права</option>
                 <option value="Педагогический институт">Педагогический институт</option>
                 <option value="Высшая школа искусств и гуманитарных наук">Высшая школа искусств и гуманитарных наук</option>
                 <option value="Высшая школа естественных наук">Высшая школа естественных наук</option>
