@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {jwtDecode} from 'jwt-decode'; // исправляем вызов импорта
+import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Login() {
   const router = useRouter();
@@ -12,6 +14,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
+      // Выполняем запрос на сервер для входа
       const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
@@ -20,18 +23,39 @@ export default function Login() {
         body: JSON.stringify({ iin, password }),
       });
 
+      // Проверяем, что response не является null
+      if (!response) {
+        throw new Error('Ответ от сервера отсутствует.');
+      }
+
+      // Проверяем статус ответа
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Ошибка: ${errorData.message || 'Невозможно выполнить запрос'}`);
+      }
+
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
+      // Сохраняем токены в localStorage
+      if (data.accessToken && data.refreshToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
 
-        router.push('/dashboard');
+        const decodedToken = jwtDecode(data.accessToken);
+        const userRole = decodedToken.role;
+
+        // Перенаправляем в зависимости от роли пользователя
+        if (userRole === 'admin') {
+          router.push('/home-admin');
+        } else {
+          router.push('/home-user');
+        }
       } else {
-        alert(data.message);
+        throw new Error('Токены не были получены');
       }
     } catch (error) {
-      console.error('Error during login:', error);
-      alert('An error occurred. Please try again later.');
+      console.error('Error during login:', error.message);
+      alert(error.message || 'Произошла ошибка. Попробуйте позже.');
     }
   };
 
@@ -41,12 +65,6 @@ export default function Login() {
         <div className="flex flex-col md:flex-row">
           <div className="flex flex-1 justify-center items-center mb-8 md:mb-0">
             <img src="/logo.png" alt="Science AIU Logo" className="mx-auto mb-6 w-40" />
-            {/* <p className="text-gray-700 text-center md:text-left mb-6">
-              Если у вас уже есть логин и пароль в системе Univer.kaznu.kz, введите их в меню справа для авторизации в системе.
-            </p> */}
-            {/* <p className="text-gray-700 text-center md:text-left">
-              Если вы забыли пароль, обратитесь в отдел сопровождения (вн.тел. 1142) для сброса старого и назначения нового пароля.
-            </p> */}
           </div>
           <div className="flex-1 border-l border-blue-300 pl-8">
             <h2 className="text-xl font-bold mb-4 text-gray-900">Вход в систему</h2>
@@ -58,7 +76,7 @@ export default function Login() {
                   value={iin}
                   onChange={(e) => setIIN(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -68,7 +86,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <button
@@ -99,7 +117,7 @@ export default function Login() {
             Инструкция по работе с системой
           </Link>
         </div>
-        <p className="text-center text-gray-500 text-sm mt-4">&copy; AIU</p>
+        <p className="text-center text-gray-500 text-sm mt-4">&copy; AIU Science</p>
       </div>
     </div>
   );
