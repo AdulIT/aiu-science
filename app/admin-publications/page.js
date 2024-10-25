@@ -21,8 +21,32 @@ export default function AdminPublications() {
   const [publications, setPublications] = useState([]);
   const [selectedYear, setSelectedYear] = useState('');
   const [filteredPublications, setFilteredPublications] = useState([]);
-  const [users, setUsers] = useState([]); // Список всех пользователей для фильтрации
+  const [users, setUsers] = useState([]); 
   const [selectedUser, setSelectedUser] = useState('');
+  const [selectedHigherSchool, setSelectedHigherSchool] = useState('');
+  const [higherSchools, setHigherSchools] = useState([]);
+
+
+ useEffect(() => {
+  if (users.length > 0) {
+    const filtered = publications.filter((pub) => {
+      const yearMatch = selectedYear ? pub.year === selectedYear : true;
+      const userMatch = selectedUser ? pub.iin === selectedUser : true;
+
+      const author = users.find((user) => user.iin === pub.iin);
+      const schoolMatch = selectedHigherSchool
+        ? author && author.higherSchool === selectedHigherSchool
+        : true;
+
+      return yearMatch && userMatch && schoolMatch;
+    });
+
+    setFilteredPublications(filtered);
+  } else {
+    setFilteredPublications(publications);
+  }
+}, [selectedYear, selectedUser, selectedHigherSchool, publications, users]);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,19 +89,24 @@ export default function AdminPublications() {
       }
     };
   
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        const response = await makeAuthenticatedRequest('http://localhost:8080/api/admin/users', {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` }
-        }, router);
-        const data = await response.json();
-        setUsers(data.users);
-      } catch (error) {
-        console.error('Ошибка при загрузке пользователей:', error);
-      }
-    };
+      const fetchUsers = async () => {
+        try {
+          const token = localStorage.getItem('accessToken');
+          const response = await makeAuthenticatedRequest('http://localhost:8080/api/admin/users', {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` }
+          }, router);
+          const data = await response.json();
+          setUsers(data.users);
+
+          // Extract unique higher schools
+          const uniqueHigherSchools = [...new Set(data.users.map((user) => user.higherSchool))].filter(Boolean);
+          setHigherSchools(uniqueHigherSchools);
+        } catch (error) {
+          console.error('Ошибка при загрузке пользователей:', error);
+        }
+      };
+
   
     fetchData();
     fetchUsers();
@@ -216,6 +245,22 @@ export default function AdminPublications() {
                 ))}
             </select>
           </div>
+          <div>
+            <label>Фильтр по высшей школе:</label>
+            <select
+              value={selectedHigherSchool}
+              onChange={(e) => setSelectedHigherSchool(e.target.value)}
+              className="px-3 py-2 border rounded-lg"
+            >
+              <option value="">Все высшие школы</option>
+              {higherSchools.map((school, index) => (
+                <option key={index} value={school}>
+                  {school}
+                </option>
+              ))}
+            </select>
+          </div>
+
         </div>
 
         <div>
