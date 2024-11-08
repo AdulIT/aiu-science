@@ -180,78 +180,78 @@ export default function Dashboard({ params }) {
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          {['fullName', 'scopusId', 'wosId', 'orcid', 'birthDate', 'phone', 'email', 'researchArea'].map((field) => (
-            <div key={field}>
-              <label className="block mb-1 font-medium text-gray-700">
-                {field === 'fullName' && 'ФИО'}
-                {field === 'scopusId' && 'Scopus Author ID'}
-                {field === 'wosId' && 'Web of Science ResearcherID'}
-                {field === 'orcid' && 'ORCID'}
-                {field === 'birthDate' && 'Дата рождения'}
-                {field === 'phone' && 'Телефон'}
-                {field === 'email' && 'Email'}
-                {field === 'researchArea' && 'Научные интересы'}
-              </label>
-              {isEditing && !isAdmin ? (
-                field === 'researchArea' ? (
-                  <textarea
-                    name={field}
-                    value={userData[field]}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                ) : (
-                  <input
-                    type={field === 'birthDate' ? 'date' : 'text'}
-                    name={field}
-                    value={userData[field]}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )
-              ) : (
-                <p className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
-                  {userData[field] || 'Не указано'}
-                </p>
-              )}
-            </div>
-          ))}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+  {['fullName', 'scopusId', 'wosId', 'orcid', 'birthDate', 'phone', 'email', 'researchArea'].map((field) => (
+    <div key={field}>
+      <label className="block mb-1 font-medium text-gray-700">
+        {field === 'fullName' && 'ФИО'}
+        {field === 'scopusId' && 'Scopus Author ID'}
+        {field === 'wosId' && 'Web of Science ResearcherID'}
+        {field === 'orcid' && 'ORCID'}
+        {field === 'birthDate' && 'Дата рождения'}
+        {field === 'phone' && 'Телефон'}
+        {field === 'email' && 'Email'}
+        {field === 'researchArea' && 'Научные интересы'}
+      </label>
+      {isEditing && !isAdmin ? (
+        field === 'researchArea' ? (
+          <textarea
+            name={field}
+            value={userData[field]}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        ) : (
+          <input
+            type={field === 'birthDate' ? 'date' : 'text'}
+            name={field}
+            value={userData[field]}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        )
+      ) : (
+        <p className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+          {userData[field] || 'Не указано'}
+        </p>
+      )}
+    </div>
+  ))}
 
-          {/* Поле для роли (только админ видит) */}
-          {isAdmin && (
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">Роль</label>
-              <p className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
-                {userData.role || 'Не указано'}
-              </p>
-            </div>
-          )}
+  {/* Поле для роли (только админ видит) */}
+  {isAdmin && (
+    <div>
+      <label className="block mb-1 font-medium text-gray-700">Роль</label>
+      <p className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+        {userData.role || 'Не указано'}
+      </p>
+    </div>
+  )}
 
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">Высшая школа</label>
-            {isEditing && !isAdmin ? (
-              <select
-                name="higherSchool"
-                value={userData.higherSchool}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Выберите школу</option>
-                <option value="Высшая школа информационных технологий и инженерии">Высшая школа информационных технологий и инженерии</option>
-                <option value="Высшая школа экономики">Высшая школа экономики</option>
-                <option value="Высшая школа права">Высшая Школа Права</option>
-                <option value="Педагогический институт">Педагогический институт</option>
-                <option value="Высшая школа искусств и гуманитарных наук">Высшая школа искусств и гуманитарных наук</option>
-                <option value="Высшая школа естественных наук">Высшая школа естественных наук</option>
-              </select>
-            ) : (
-              <p className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
-                {userData.higherSchool || 'Не указано'}
-              </p>
-            )}
-          </div>
-        </div>
+  <div>
+    <label className="block mb-1 font-medium text-gray-700">Высшая школа</label>
+    {isEditing && !isAdmin ? (
+      <select
+        name="higherSchool"
+        value={userData.higherSchool}
+        onChange={handleInputChange}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Выберите школу</option>
+        <option value="Высшая школа информационных технологий и инженерии">Высшая школа информационных технологий и инженерии</option>
+        <option value="Высшая школа экономики">Высшая школа экономики</option>
+        <option value="Высшая школа права">Высшая Школа Права</option>
+        <option value="Педагогический институт">Педагогический институт</option>
+        <option value="Высшая школа искусств и гуманитарных наук">Высшая школа искусств и гуманитарных наук</option>
+        <option value="Высшая школа естественных наук">Высшая школа естественных наук</option>
+      </select>
+    ) : (
+      <p className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+        {userData.higherSchool || 'Не указано'}
+      </p>
+    )}
+  </div>
+</div>
 
         {!isAdmin && isEditing ? (
           <button
