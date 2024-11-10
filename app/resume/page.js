@@ -11,6 +11,7 @@ export default function UserResume() {
   const iin = params.iin;
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const url = process.env.API_URL;
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -23,7 +24,7 @@ export default function UserResume() {
           // const decodedToken = jwtDecode(token);
           // setIsAdmin(decodedToken.role === 'admin');
 
-          const endpoint = 'http://localhost:8080/api/user/profile';
+          const endpoint = `${url}/api/user/profile`;
 
           const response = await makeAuthenticatedRequest(endpoint, {
             method: 'GET',
@@ -54,7 +55,7 @@ export default function UserResume() {
 
   const generateResume = async (format) => {
     try {
-      const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/generateResume', {
+      const response = await makeAuthenticatedRequest(`${url}/api/user/generateResume`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ iin }),
@@ -63,9 +64,9 @@ export default function UserResume() {
       const data = await response.json();
       console.log(data);
       if (format === 'docx') {
-        window.open(`http://localhost:8080/api/user/downloadResumeDocx?path=${data.docxPath}`);
+        window.open(`${url}/api/user/downloadResumeDocx?path=${data.docxPath}`);
       } else if (format === 'pdf') {
-        window.open(`http://localhost:8080/api/user/downloadResumePdf?path=${data.pdfPath}`);
+        window.open(`${url}/api/user/downloadResumePdf?path=${data.pdfPath}`);
       }
     } catch (error) {
       console.error('Error generating resume:', error);

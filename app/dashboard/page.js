@@ -23,6 +23,7 @@ export default function Dashboard({ params }) {
     higherSchool: '',
     role: '',
   });
+  const url = process.env.API_URL;
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -36,8 +37,8 @@ export default function Dashboard({ params }) {
           setIsAdmin(decodedToken.role === 'admin');
 
           const endpoint = isAdmin && params?.iin 
-            ? `http://localhost:8080/api/admin/user/${params.iin}` 
-            : 'http://localhost:8080/api/user/profile'; // Если админ, получаем данные другого пользователя
+            ? `${url}/api/admin/user/${params.iin}` 
+            : `${url}/api/user/profile`; // Если админ, получаем данные другого пользователя
 
           const response = await makeAuthenticatedRequest(endpoint, {
             method: 'GET',
@@ -66,11 +67,6 @@ export default function Dashboard({ params }) {
     }
   }, [router, isAdmin, params?.iin]);
 
-
-const url = process.env.API_URL;
-
-console.log(url);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserData((prev) => ({ ...prev, [name]: value }));
@@ -84,7 +80,7 @@ console.log(url);
         const formData = new FormData();
         formData.append('profilePhoto', file);
 
-        const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/uploadPhoto', {
+        const response = await makeAuthenticatedRequest(`${url}/api/user/uploadPhoto`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -115,7 +111,7 @@ console.log(url);
         return;
       }
 
-      const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/update', {
+      const response = await makeAuthenticatedRequest(`${url}/api/user/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +164,7 @@ console.log(url);
         <div className="flex flex-col items-center mb-6">
           <div className="w-300 h-300 mb-4 rounded-full overflow-hidden border-4 border-gray-300">
             <img
-              src={`http://localhost:8080/public${userData.profilePhoto || '/default-profile.png'}`}
+              src={`${url}/public${userData.profilePhoto || '/default-profile.png'}`}
               alt="Profile Photo"
               className="w-full h-full object-cover"
             />

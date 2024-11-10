@@ -10,7 +10,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const url = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -27,7 +27,7 @@ export default function AdminPage() {
         return;
       }
 
-      makeAuthenticatedRequest('http://localhost:8080/api/admin/users', {
+      makeAuthenticatedRequest(`${url}/api/admin/users`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

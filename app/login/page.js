@@ -9,13 +9,13 @@ export default function Login() {
   const router = useRouter();
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
+  const url = process.env.API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Выполняем запрос на сервер для входа
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch(`${url}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -23,12 +23,10 @@ export default function Login() {
         body: JSON.stringify({ iin, password }),
       });
 
-      // Проверяем, что response не является null
       if (!response) {
         throw new Error('Ответ от сервера отсутствует.');
       }
 
-      // Проверяем статус ответа
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(`Ошибка: ${errorData.message || 'Невозможно выполнить запрос'}`);
@@ -36,7 +34,6 @@ export default function Login() {
 
       const data = await response.json();
 
-      // Сохраняем токены в localStorage
       if (data.accessToken && data.refreshToken) {
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
@@ -44,7 +41,6 @@ export default function Login() {
         const decodedToken = jwtDecode(data.accessToken);
         const userRole = decodedToken.role;
 
-        // Перенаправляем в зависимости от роли пользователя
         if (userRole === 'admin') {
           router.push('/home-admin');
         } else {

@@ -1,15 +1,15 @@
-"use client";  // Add this to ensure it's a client-side component
+"use client";
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';  // Make sure you're importing from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
 export default function Navbar({ onLogout }) {
   const router = useRouter();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    onLogout();  // Update the state to reflect logged-out status
-    router.push('/login');  // Redirect to login page after logout
+    onLogout();
+    router.push('/login');
   };
 
   return (

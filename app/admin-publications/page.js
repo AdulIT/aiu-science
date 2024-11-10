@@ -31,8 +31,6 @@ export default function AdminPublications() {
   
   const url = process.env.NEXT_PUBLIC_API_URL;
 
-  console.log(url);
-
   useEffect(() => {
     const fetchData = async () => {
       try {

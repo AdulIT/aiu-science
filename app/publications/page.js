@@ -5,7 +5,6 @@ import { jwtDecode } from 'jwt-decode';
 import { makeAuthenticatedRequest } from '../lib/api';
 import Navbar from '../../components/Navbar';
 
-// Объект для сопоставления типов публикаций с читаемыми названиями
 const publicationTypeMap = {
   scopus_wos: 'Научные труды (Scopus/Web of Science)',
   koknvo: 'КОКНВО',
@@ -21,8 +20,8 @@ export default function Publications() {
   const [publications, setPublications] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1); // Шаги формы
-  const [selectedType, setSelectedType] = useState(""); // Выбранный тип публикации
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedType, setSelectedType] = useState("");
   const [newPublication, setNewPublication] = useState({
     authors: '',
     title: '',
@@ -35,6 +34,7 @@ export default function Publications() {
     file: null,
     publicationType: '',
   });
+  const url = process.env.API_URL;
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -49,8 +49,8 @@ export default function Publications() {
         try {
           const response = await makeAuthenticatedRequest(
             isAdmin
-              ? 'http://localhost:8080/api/admin/publications'
-              : 'http://localhost:8080/api/user/publications',
+              ? `${url}/api/admin/publications`
+              : `${url}/api/user/publications`,
             {
               method: 'GET',
               headers: {
@@ -116,7 +116,7 @@ export default function Publications() {
     });
 
     try {
-      const response = await fetch('http://localhost:8080/api/user/publications', {
+      const response = await fetch(`${url}/api/user/publications`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -127,7 +127,6 @@ export default function Publications() {
       if (response.ok) {
         const addedPublication = await response.json();
         setPublications((prev) => [...prev, addedPublication]);
-        // Сбрасываем форму и возвращаемся к шагу выбора типа публикации
         setNewPublication({
           authors: '',
           title: '',
@@ -140,9 +139,9 @@ export default function Publications() {
           file: null,
           publicationType: '',
         });
-        setSelectedType(''); // Сброс выбора типа
-        setCurrentStep(1); // Возвращаемся на шаг 1
-        setIsAdding(false); // Закрываем форму добавления
+        setSelectedType('');
+        setCurrentStep(1);
+        setIsAdding(false);
       } else {
         console.error('Ошибка при добавлении публикации');
       }
@@ -160,14 +159,14 @@ export default function Publications() {
   const handleNextStep = () => {
     if (selectedType) {
       setNewPublication((prev) => ({ ...prev, publicationType: selectedType }));
-      setCurrentStep(2); // Переход на шаг 2
+      setCurrentStep(2);
     } else {
       alert('Пожалуйста, выберите тип публикации');
     }
   };
 
   const handlePreviousStep = () => {
-    setCurrentStep(1); // Возврат на шаг 1
+    setCurrentStep(1);
   };
 
   if (isLoading) {
@@ -325,7 +324,7 @@ export default function Publications() {
                 {publication.isbn && <p><strong>ISBN:</strong> {publication.isbn}</p>}
                 {publication.file && (
                   <p>
-                    <strong>Файл:</strong> <a href={`http://localhost:8080/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
+                    <strong>Файл:</strong> <a href={`${url}/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
                   </p>
                 )}
               </div>

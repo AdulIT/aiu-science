@@ -21,7 +21,7 @@ export default function UserProfile() {
   const [publications, setPublications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
-
+  const url = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -32,7 +32,7 @@ export default function UserProfile() {
     const fetchUserProfile = async () => {
       try {
         const response = await makeAuthenticatedRequest(
-          `http://localhost:8080/api/admin/user/${iin}`,
+          `${url}/api/admin/user/${iin}`,
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
           router
         );
@@ -55,7 +55,7 @@ export default function UserProfile() {
     const fetchUserPublications = async () => {
       try {
         const response = await makeAuthenticatedRequest(
-          `http://localhost:8080/api/user/${iin}/publications`,
+          `${url}/api/user/${iin}/publications`,
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
           router
         );
@@ -79,14 +79,14 @@ export default function UserProfile() {
   const generateReport = async () => {
     try {
       const response = await makeAuthenticatedRequest(
-        `http://localhost:8080/api/admin/generateUserReport`, // Эндпоинт для генерации отчета
+        `${url}/api/admin/generateUserReport`,
         { 
           method: 'POST',
           headers: { 
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`, 
             'Content-Type': 'application/json' 
           },
-          body: JSON.stringify({ iin }) // Отправляем ИИН пользователя
+          body: JSON.stringify({ iin })
         },
         router
       );
@@ -111,7 +111,7 @@ export default function UserProfile() {
 
   const generateResume = async (format) => {
     try {
-      const response = await makeAuthenticatedRequest('http://localhost:8080/api/user/generateResume', {
+      const response = await makeAuthenticatedRequest('${url}/api/user/generateResume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ iin }),
@@ -119,9 +119,9 @@ export default function UserProfile() {
       
       const data = await response.json();
       if (format === 'docx') {
-        window.open(`http://localhost:8080/api/user/downloadResumeDocx?path=${data.docxPath}`);
+        window.open(`${url}/api/user/downloadResumeDocx?path=${data.docxPath}`);
       } else if (format === 'pdf') {
-        window.open(`http://localhost:8080/api/user/downloadResumePdf?path=${data.pdfPath}`);
+        window.open(`${url}/api/user/downloadResumePdf?path=${data.pdfPath}`);
       }
     } catch (error) {
       console.error('Error generating resume:', error);
@@ -144,7 +144,7 @@ export default function UserProfile() {
           <h1 className="text-2xl font-bold mb-4">Профиль пользователя</h1>
           <div className="flex justify-center mb-6">
             <img
-              src={`http://localhost:8080/public${user.profilePhoto || '/default-profile.png'}`}
+              src={`${url}/public${user.profilePhoto || '/default-profile.png'}`}
               alt="User Avatar"
               className="w-36 h-36 rounded-full object-cover"
             />
@@ -235,7 +235,7 @@ export default function UserProfile() {
                   {publication.isbn && <p><strong>ISBN:</strong> {publication.isbn}</p>}
                   {publication.file && (
                   <p>
-                    <strong>Файл:</strong> <a href={`http://localhost:8080/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
+                    <strong>Файл:</strong> <a href={`${url}/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
                   </p>
                 )}
                 </div>

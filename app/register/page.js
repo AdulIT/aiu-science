@@ -7,18 +7,18 @@ export default function Register() {
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const url = process.env.API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Проверка совпадения паролей
     if (password !== confirmPassword) {
       alert('Пароли не совпадают');
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/register', {
+      const response = await fetch(`${url}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
