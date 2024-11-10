@@ -23,7 +23,7 @@ export default function Dashboard({ params }) {
     higherSchool: '',
     role: '',
   });
-  const url = process.env.API_URL;
+  const url = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');

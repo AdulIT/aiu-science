@@ -2,26 +2,26 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {jwtDecode} from 'jwt-decode'; // исправляем вызов импорта
+import {jwtDecode} from 'jwt-decode';
 import { makeAuthenticatedRequest } from '../lib/api';
 
 export default function Login() {
   const router = useRouter();
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
-  const url = process.env.API_URL;
+  const url = process.env.NEXT_PUBLIC_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${url}/api/auth/login`, {
+      const response = await makeAuthenticatedRequest(`${url}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ iin, password }),
-      });
+      }, router);
 
       if (!response) {
         throw new Error('Ответ от сервера отсутствует.');

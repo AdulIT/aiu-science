@@ -11,7 +11,7 @@ export default function UserResume() {
   const iin = params.iin;
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const url = process.env.API_URL;
+  const url = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');

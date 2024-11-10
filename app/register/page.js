@@ -7,7 +7,7 @@ export default function Register() {
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const url = process.env.API_URL;
+  const url = process.env.NEXT_PUBLIC_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
