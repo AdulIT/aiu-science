@@ -28,7 +28,7 @@ export default function AdminPublications() {
 
 
  useEffect(() => {
-  if (users.length > 0) {
+  if (users?.length > 0) {
     const filtered = publications.filter((pub) => {
       const yearMatch = selectedYear ? pub.year === selectedYear : true;
       const userMatch = selectedUser ? pub.iin === selectedUser : true;
