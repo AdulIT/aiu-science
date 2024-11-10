@@ -9,7 +9,7 @@ export default function Login() {
   const router = useRouter();
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
-  const url = process.env.NEXT_PUBLIC_API_URL;
+  const url = process.env.NEXT_PUBLIC_API_URL || 'https://aiu-science-server.vercel.app';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
