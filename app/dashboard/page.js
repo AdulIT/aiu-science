@@ -66,6 +66,11 @@ export default function Dashboard({ params }) {
     }
   }, [router, isAdmin, params?.iin]);
 
+
+const url = process.env.API_URL;
+
+console.log(url);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserData((prev) => ({ ...prev, [name]: value }));

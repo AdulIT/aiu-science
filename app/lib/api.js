@@ -1,4 +1,7 @@
 // Функция для обновления токена
+const url = process.env.NEXT_PUBLIC_API_URL;
+
+console.log(url);
 export async function refreshAccessToken() {
   const refreshToken = localStorage.getItem('refreshToken');
 
@@ -8,7 +11,7 @@ export async function refreshAccessToken() {
   }
 
   try {
-    const response = await fetch('http://localhost:8080/api/auth/refresh-token', {
+    const response = await fetch(`${url}/api/auth/refresh-token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

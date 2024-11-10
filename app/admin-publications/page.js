@@ -29,6 +29,9 @@ export default function AdminPublications() {
   const [maxYear, setMaxYear] = useState('');
   const [yearRange, setYearRange] = useState({ from: '', to: '' });
   
+  const url = process.env.NEXT_PUBLIC_API_URL;
+
+  console.log(url);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,7 +49,8 @@ export default function AdminPublications() {
         }
 
         const response = await makeAuthenticatedRequest(
-          'http://localhost:8080/api/admin/publications',
+        //   `'http://localhost:8080/api/admin/publications'`,
+          `${url}/api/admin/publications`,
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
           router
         );
@@ -80,7 +84,8 @@ export default function AdminPublications() {
       try {
         const token = localStorage.getItem('accessToken');
         const response = await makeAuthenticatedRequest(
-          'http://localhost:8080/api/admin/users',
+        //   'http://localhost:8080/api/admin/users',
+          `${url}/api/admin/users`,
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
           router
         );
@@ -128,7 +133,7 @@ export default function AdminPublications() {
       return;
     }
 
-    const response = await makeAuthenticatedRequest('http://localhost:8080/api/admin/generateAllPublicationsReport', {
+    const response = await makeAuthenticatedRequest(`${url}/api/admin/generateAllPublicationsReport`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -163,7 +168,7 @@ const generateUserReport = async (iin) => {
     }
 
     const response = await makeAuthenticatedRequest(
-      `http://localhost:8080/api/admin/generateUserReport`,
+      `${url}/api/admin/generateUserReport`,
       {
         method: 'POST',
         headers: {
@@ -231,7 +236,7 @@ const generateUserReport = async (iin) => {
             <label className="mb-1 font-semibold">Фильтр по пользователю:</label>
             <select value={selectedUser} onChange={e => setSelectedUser(e.target.value)} className="px-3 py-2 border rounded-md">
               <option value="">Все пользователи</option>
-              {users.map((user, index) => (
+              {users && users.map((user, index) => (
                 <option key={index} value={user.iin}>{user.fullName}</option>
               ))}
             </select>

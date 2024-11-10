@@ -20,20 +20,11 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link href="/dashboard" className="block p-4 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition duration-300">
-                Личный кабинет
-            </Link>
-            <Link href="/publications" className="block p-4 bg-green-600 text-white text-center rounded-lg hover:bg-green-700 transition duration-300">
-                Публикации
-            </Link>
             <Link href="/login" className="block p-4 bg-yellow-600 text-white text-center rounded-lg hover:bg-yellow-700 transition duration-300">
                 Вход в систему
             </Link>
             <Link href="/register" className="block p-4 bg-purple-600 text-white text-center rounded-lg hover:bg-purple-700 transition duration-300">
                 Регистрация
-            </Link>
-            <Link href="/future" className="block p-4 bg-gray-600 text-white text-center rounded-lg hover:bg-gray-700 transition duration-300">
-                Будущие разделы
             </Link>
           </div>
 
