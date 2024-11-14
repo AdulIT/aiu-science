@@ -10,6 +10,7 @@ export default function Login() {
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
   const url = process.env.NEXT_PUBLIC_API_URL || 'https://aiu-science-server.vercel.app';
+  // const url = 'http://localhost:8080';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
