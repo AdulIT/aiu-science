@@ -1,7 +1,9 @@
-// Функция для обновления токена
 const url = process.env.NEXT_PUBLIC_API_URL;
 
-console.log(url);
+if (!url) {
+  console.error('NEXT_PUBLIC_API_URL не задан в окружении');
+}
+
 export async function refreshAccessToken() {
   const refreshToken = localStorage.getItem('refreshToken');
 
@@ -28,27 +30,19 @@ export async function refreshAccessToken() {
     }
   } catch (error) {
     console.error('Ошибка при обновлении токена:', error);
-    // Если обновить токен не удалось, перенаправляем на страницу логина
-    router.push('/login');
+    if (router) {
+      router.push('/login');
+    } else {
+      window.location.href = '/login';
+    }
   }
-
-  // const data = await response.json();
-
-  // if (response.ok && data.accessToken) {
-  //   localStorage.setItem('accessToken', data.accessToken);
-  //   return data.accessToken;
-  // } else {
-  //   console.error('Ошибка при обновлении Access Token:', data.message);
-  //   return null;
-  // }
 }
 
-export async function makeAuthenticatedRequest(endpoint, options = {}, router) {
+export async function makeAuthenticatedRequest(endpoint, options = {}, router, retry = true) {
   let accessToken = localStorage.getItem('accessToken');
 
-  // Если accessToken отсутствует, не пытаемся обновить токен, просто возвращаем null
   if (!accessToken) {
-    return null; // Не делаем запрос с отсутствующим токеном
+    return null;
   }
 
   options.headers = {
@@ -56,24 +50,27 @@ export async function makeAuthenticatedRequest(endpoint, options = {}, router) {
     'Authorization': `Bearer ${accessToken}`,
   };
 
-  const response = await fetch(endpoint, options);
+  try {
+    const response = await fetch(endpoint, options);
 
-  // Если токен недействителен, пробуем обновить токен
-  if (response.status === 401) {
-    accessToken = await refreshAccessToken(); // Пробуем обновить токен
-    if (accessToken) {
-      options.headers['Authorization'] = `Bearer ${accessToken}`;
-      return fetch(endpoint, options); // Повторяем запрос с обновленным токеном
-    } else {
-      // Перенаправляем на логин, если не удалось обновить токен
-      if (router) {
-        router.push('/login');
+    if (response.status === 401 && retry) {
+      accessToken = await refreshAccessToken();
+      if (accessToken) {
+        options.headers['Authorization'] = `Bearer ${accessToken}`;
+        return makeAuthenticatedRequest(endpoint, options, router, false);
       } else {
-        window.location.href = '/login';
+        if (router) {
+          router.push('/login');
+        } else {
+          window.location.href = '/login';
+        }
+        return null;
       }
-      return null;
     }
-  }
 
-  return response;
+    return response;
+  } catch (error) {
+    console.error('Ошибка при выполнении запроса:', error);
+    throw error;
+  }
 }

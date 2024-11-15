@@ -9,12 +9,11 @@ export default function Login() {
   const router = useRouter();
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
-  const url = process.env.NEXT_PUBLIC_API_URL || 'https://aiu-science-server.vercel.app';
+  const url = process.env.NEXT_PUBLIC_API_URL;
   // const url = 'http://localhost:8080';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const response = await makeAuthenticatedRequest(`${url}/api/auth/login`, {
         method: 'POST',
@@ -23,6 +22,7 @@ export default function Login() {
         },
         body: JSON.stringify({ iin, password }),
       }, router);
+      console.log("API URL:", `${url}/api/auth/login`);
 
       if (!response) {
         throw new Error('Ответ от сервера отсутствует.');

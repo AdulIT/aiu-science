@@ -30,6 +30,7 @@ export default function AdminPublications() {
   const [yearRange, setYearRange] = useState({ from: '', to: '' });
   
   const url = process.env.NEXT_PUBLIC_API_URL;
+  // const url = 'http://localhost:8080';
 
   useEffect(() => {
     const fetchData = async () => {
