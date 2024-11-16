@@ -4,7 +4,7 @@ if (!url) {
   console.error('NEXT_PUBLIC_API_URL не задан в окружении');
 }
 
-export async function refreshAccessToken() {
+export async function refreshAccessToken(router) {
   const refreshToken = localStorage.getItem('refreshToken');
 
   if (!refreshToken) {
@@ -39,9 +39,14 @@ export async function refreshAccessToken() {
 }
 
 export async function makeAuthenticatedRequest(endpoint, options = {}, router, retry = true) {
+  console.log("makeAuthenticatedRequest called with:");
+  console.log("Endpoint:", endpoint);
+  console.log("Initial Options:", options);
+
   let accessToken = localStorage.getItem('accessToken');
 
   if (!accessToken) {
+    console.error("No access token found in localStorage");
     return null;
   }
 
@@ -49,28 +54,29 @@ export async function makeAuthenticatedRequest(endpoint, options = {}, router, r
     ...options.headers,
     'Authorization': `Bearer ${accessToken}`,
   };
+  console.log("Options with Authorization Header:", options);
 
   try {
     const response = await fetch(endpoint, options);
 
+    console.log(`Response status for ${endpoint}:`, response.status);
+
     if (response.status === 401 && retry) {
-      accessToken = await refreshAccessToken();
+      console.warn("Unauthorized. Attempting token refresh...");
+      accessToken = await refreshAccessToken(router);
       if (accessToken) {
         options.headers['Authorization'] = `Bearer ${accessToken}`;
+        console.log("Retrying request with refreshed token...");
         return makeAuthenticatedRequest(endpoint, options, router, false);
       } else {
-        if (router) {
-          router.push('/login');
-        } else {
-          window.location.href = '/login';
-        }
+        console.error("Token refresh failed. Redirecting to login.");
         return null;
       }
     }
 
     return response;
   } catch (error) {
-    console.error('Ошибка при выполнении запроса:', error);
+    console.error('Ошибка при выполнении запроса:', error.message);
     throw error;
   }
 }

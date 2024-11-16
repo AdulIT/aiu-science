@@ -15,13 +15,13 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await makeAuthenticatedRequest(`${url}/api/auth/login`, {
+      const response = await fetch(`${url}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ iin, password }),
-      }, router);
+      });
       console.log("API URL:", `${url}/api/auth/login`);
 
       if (!response) {
@@ -65,7 +65,7 @@ export default function Login() {
           </div>
           <div className="flex-1 border-l border-blue-300 pl-8">
             <h2 className="text-xl font-bold mb-4 text-gray-900">Вход в систему</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form method='POST' onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Логин</label>
                 <input
