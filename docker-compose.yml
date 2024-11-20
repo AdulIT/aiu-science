@@ -9,7 +9,7 @@ services:
       - "3000"
     ports:
       - "3000:3000"
-    command: npm run dev -- --host
+    command: npm run dev
     networks:
       - compose_network
 
