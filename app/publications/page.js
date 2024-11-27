@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
-import { makeAuthenticatedRequest } from '../lib/api';
+// import { makeAuthenticatedRequest } from '../lib/api';
 import Navbar from '../../components/Navbar';
 
 const publicationTypeMap = {
@@ -47,7 +47,7 @@ export default function Publications() {
 
       const fetchPublications = async () => {
         try {
-          const response = await makeAuthenticatedRequest(
+          const response = await fetch(
             isAdmin
               ? `${url}/api/admin/publications`
               : `${url}/api/user/publications`,
@@ -58,7 +58,7 @@ export default function Publications() {
                 Authorization: `Bearer ${token}`,
               },
             },
-            router
+            // router
           );
 
           if (response.ok) {
