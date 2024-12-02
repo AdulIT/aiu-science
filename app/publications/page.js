@@ -63,6 +63,8 @@ export default function Publications() {
 
           if (response.ok) {
             const data = await response.json();
+            console.log(data);
+            
             setPublications(data);
           } else {
             console.error('Ошибка при загрузке публикаций');
@@ -105,7 +107,7 @@ export default function Publications() {
       alert('Ошибка авторизации. Пожалуйста, войдите снова.');
       return;
     }
-
+  
     const formData = new FormData();
     Object.keys(newPublication).forEach((key) => {
       if (key === 'file' && newPublication.file) {
@@ -114,7 +116,7 @@ export default function Publications() {
         formData.append(key, newPublication[key]);
       }
     });
-
+  
     try {
       const response = await fetch(`${url}/api/user/publications`, {
         method: 'POST',
@@ -123,10 +125,20 @@ export default function Publications() {
         },
         body: formData,
       });
-
+  
       if (response.ok) {
         const addedPublication = await response.json();
-        setPublications((prev) => [...prev, addedPublication]);
+        console.log('Added publication:', addedPublication); // Лог новой публикации
+        setPublications((prev) => {
+          // Проверяем, что prev — массив
+          if (!Array.isArray(prev)) {
+            console.error('Ошибка: prev не является массивом', prev);
+            return [addedPublication];
+          }
+          return [...prev, addedPublication];
+        });
+  
+        // Сброс формы
         setNewPublication({
           authors: '',
           title: '',
