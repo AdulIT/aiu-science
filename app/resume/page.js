@@ -26,14 +26,14 @@ export default function UserResume() {
 
           const endpoint = `${url}/api/user/profile`;
 
-          const response = await fetch(endpoint, {
+          const response = await makeAuthenticatedRequest(endpoint, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
           }, 
-          // router
+          router
           );
       
           if (response.ok) {
@@ -57,12 +57,12 @@ export default function UserResume() {
 
   const generateResume = async (format) => {
     try {
-      const response = await fetch(`${url}/api/user/generateResume`, {
+      const response = await makeAuthenticatedRequest(`${url}/api/user/generateResume`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ iin }),
       }, 
-      // router
+      router
       );
       
       const data = await response.json();
