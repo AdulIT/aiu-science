@@ -304,7 +304,7 @@ const generateUserReport = async (iin) => {
                 </p>
                 {publication.file && (
                   <p>
-                    <strong>Файл:</strong> <a target="_blank" href={`http://localhost:8080/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
+                    <strong>Файл:</strong> <a target="_blank" href={`${url}/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
                   </p>
                 )}
                 <button

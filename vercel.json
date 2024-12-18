@@ -1,9 +1,9 @@
-{
-    "version": 2,
-    "rewrites": [
-      {
-        "source": "/api/:path*",
-        "destination": "http://92.38.48.142:8080//api/:path*"
-      }
-    ]
-  }
+// {
+//     "version": 2,
+//     "rewrites": [
+//       {
+//         "source": "/api/:path*",
+//         "destination": "http://92.38.48.142:8080/api/:path*"
+//       }
+//     ]
+//   }

@@ -32,7 +32,9 @@ export default function UserResume() {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-          }, router);
+          }, 
+          router
+          );
       
           if (response.ok) {
             const data = await response.json();
@@ -59,7 +61,9 @@ export default function UserResume() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ iin }),
-      }, router);
+      }, 
+      router
+      );
       
       const data = await response.json();
       console.log(data);
