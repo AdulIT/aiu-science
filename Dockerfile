@@ -1,5 +1,5 @@
 # Dockerfile
-FROM node:18.17.0-alpine
+FROM node:20.17.0-alpine
 
 # create destination directory
 RUN mkdir -p /usr/src/app
