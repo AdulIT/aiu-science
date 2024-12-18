@@ -17,7 +17,7 @@ export default function AdminHome() {
     }
 
     const decodedToken = jwtDecode(accessToken);
-    console.log("Decoded token:", decodedToken);
+    // console.log("Decoded token:", decodedToken);
 
     if (decodedToken.role !== 'admin') {
       router.push('/home-user');

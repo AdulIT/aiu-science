@@ -22,7 +22,7 @@ export default function Login() {
         },
         body: JSON.stringify({ iin, password }),
       });
-      console.log("API URL:", `${url}/api/auth/login`);
+      // console.log("API URL:", `${url}/api/auth/login`);
 
       if (!response) {
         throw new Error('Ответ от сервера отсутствует.');

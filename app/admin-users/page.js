@@ -19,7 +19,7 @@ export default function AdminPage() {
       const decodedToken = jwtDecode(token);
       // console.log("Декодированный токен:", decodedToken); // Отладочный вывод
       const userRole = decodedToken.role;
-      console.log(`from admin page ${userRole}`);
+      // console.log(`from admin page ${userRole}`);
 
       if (userRole !== 'admin') {
         alert('Доступ запрещен: только для администраторов');

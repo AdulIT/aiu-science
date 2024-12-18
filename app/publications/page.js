@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 import { makeAuthenticatedRequest } from '../lib/api';
 import Navbar from '../../components/Navbar';
+import ErrorMessage from '../../components/ErrorMessage';
+
 
 const publicationTypeMap = {
   scopus_wos: 'Научные труды (Scopus/Web of Science)',
@@ -34,52 +36,79 @@ export default function Publications() {
     file: null,
     publicationType: '',
   });
+  const [errorMessage, setErrorMessage] = useState(""); // Состояние для ошибок
+
   const url = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
-      router.push('/login');
+      setErrorMessage("Вы не авторизованы. Пожалуйста, войдите в систему.");
       return;
-    } else {
+    }
+  
+    try {
       const decodedToken = jwtDecode(token);
       setIsAdmin(decodedToken.role === 'admin');
-
-      const fetchPublications = async () => {
-        try {
-          const response = await makeAuthenticatedRequest(
-            isAdmin
-              ? `${url}/api/admin/publications`
-              : `${url}/api/user/publications`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
+      localStorage.setItem('iin', decodedToken.iin); // Сохраняем IIN для повторного использования
+    } catch (error) {
+      console.error('Ошибка декодирования токена:', error);
+      setErrorMessage("Ошибка авторизации. Проверьте токен.");
+      router.push('/login');
+    }
+  }, [router]);
+  
+  useEffect(() => {
+    const fetchPublications = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        return;
+      }
+  
+      const iin = localStorage.getItem('iin'); // Берём сохранённый IIN
+      const endpoint = isAdmin
+        ? `${url}/api/admin/publications`
+        : `${url}/api/user/getPublications?iin=${iin}`;
+  
+      try {
+        const response = await makeAuthenticatedRequest(
+          endpoint,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
             },
-            router
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            
+          },
+          router
+        );
+  
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
             setPublications(data);
           } else {
-            console.error('Ошибка при загрузке публикаций');
-            router.push('/login');
+            console.error('Ошибка: данные публикаций не являются массивом', data);
+            setErrorMessage("Ошибка загрузки данных. Попробуйте позже.");
+            setPublications([]); // Устанавливаем пустой массив
           }
-        } catch (error) {
-          console.error('Ошибка при загрузке публикаций:', error);
+        } else {
+          console.error('Ошибка при загрузке публикаций');
+          setErrorMessage("Не удалось загрузить публикации. Проверьте авторизацию.");
           router.push('/login');
         }
+      } catch (error) {
+        console.error('Ошибка при загрузке публикаций:', error);
+        setErrorMessage("Произошла ошибка при загрузке публикаций.");
+      } finally {
         setIsLoading(false);
-      };
-
+      }
+    };
+  
+    if (isAdmin !== null) { // Запускаем fetchPublications только после проверки isAdmin
       fetchPublications();
     }
-  }, [router, isAdmin]);
+  }, [isAdmin, router]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -88,11 +117,14 @@ export default function Publications() {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
-
-  const handleFileChange = (e) => {
+const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
       alert('Файл не должен превышать 5MB.');
+      return;
+    }
+    if (file && !file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Допустим только формат PDF.');
       return;
     }
     setNewPublication((prev) => ({
@@ -102,65 +134,119 @@ export default function Publications() {
   };
 
   const handleAddPublication = async () => {
+    const requiredFields = ['authors', 'title', 'year', 'output', 'publicationType'];
+    const missingFields = requiredFields.filter((field) => !newPublication[field]);
+
+    // Проверка обязательных полей
+    if (missingFields.length > 0) {
+        setErrorMessage(`Пожалуйста, заполните все обязательные поля: ${missingFields.join(', ')}`);
+        return;
+    }
+
+    // Дополнительная валидация значений
+    if (newPublication.year && !/^\d{4}$/.test(newPublication.year)) {
+        setErrorMessage('Год должен быть в формате YYYY.');
+        return;
+    }
+
+    if (
+        newPublication.publicationType &&
+        !['scopus_wos', 'koknvo', 'conference', 'articles', 'books', 'patents'].includes(
+            newPublication.publicationType
+        )
+    ) {
+        setErrorMessage('Тип публикации имеет недопустимое значение.');
+        return;
+    }
+
+      // Преобразование authors в массив
+    const authorsArray = newPublication.authors
+    .split(',')
+    .map((author) => author.trim())
+    .filter((author) => author.length > 0);
+
+    // Создание нового объекта с обновлённым authors
+    const updatedPublication = {
+      ...newPublication,
+      authors: authorsArray, // заменяем строку на массив
+    };
+
     const token = localStorage.getItem('accessToken');
     if (!token) {
-      alert('Ошибка авторизации. Пожалуйста, войдите снова.');
+      setErrorMessage("Ошибка авторизации. Пожалуйста, войдите снова.");
       return;
     }
-  
+
+    // const decodedToken = jwtDecode(token);
+
     const formData = new FormData();
-    Object.keys(newPublication).forEach((key) => {
-      if (key === 'file' && newPublication.file) {
-        formData.append(key, newPublication.file);
+    Object.keys(updatedPublication).forEach((key) => {
+      if (key === 'file' && updatedPublication.file) {
+        formData.append(key, updatedPublication.file);
+      } else if (key === 'authors') {
+        // Преобразуем массив authors в строку для отправки
+        formData.append(key, JSON.stringify(updatedPublication.authors));
       } else {
-        formData.append(key, newPublication[key]);
+        formData.append(key, updatedPublication[key]);
       }
     });
-  
+
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`)
+    })
+
     try {
-      const response = await fetch(`${url}/api/user/publications?iin=${decodedToken.iin}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-  
-      if (response.ok) {
-        const addedPublication = await response.json();
-        console.log('Added publication:', addedPublication); // Лог новой публикации
-        setPublications((prev) => {
-          // Проверяем, что prev — массив
-          if (!Array.isArray(prev)) {
-            console.error('Ошибка: prev не является массивом', prev);
-            return [addedPublication];
-          }
-          return [...prev, addedPublication];
-        });
-  
-        // Сброс формы
-        setNewPublication({
-          authors: '',
-          title: '',
-          year: '',
-          output: '',
-          doi: '',
-          isbn: '',
-          scopus: false,
-          wos: false,
-          file: null,
-          publicationType: '',
-        });
-        setSelectedType('');
-        setCurrentStep(1);
-        setIsAdding(false);
-      } else {
-        console.error('Ошибка при добавлении публикации');
-      }
+        const response = await makeAuthenticatedRequest(`${url}/api/user/upload`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+        }, router);
+        
+        // console.log('Данные перед отправкой:', newPublication);
+
+        if (response.ok) {
+            const addedPublication = await response.json();
+            console.log('Добавленная публикация:', addedPublication);
+
+            // Проверяем, что предыдущее состояние — массив
+            setPublications((prev) => {
+                if (Array.isArray(prev)) {
+                    return [...prev, addedPublication];
+                } else {
+                    console.error('Ошибка: состояние публикаций не является массивом', prev);
+                    return [addedPublication];
+                }
+            });
+// Сброс формы
+            setNewPublication({
+                authors: '',
+                title: '',
+                year: '',
+                output: '',
+                doi: '',
+                isbn: '',
+                scopus: false,
+                wos: false,
+                file: null,
+                publicationType: '',
+            });
+            setSelectedType('');
+            setCurrentStep(1);
+            setIsAdding(false);
+        } else {
+            // console.error('Ошибка при добавлении публикации');
+            // Обработка ошибок от сервера
+            const errorData = await response.json(); // Получаем тело ответа с ошибкой
+            setErrorMessage(`Ошибка: ${errorData.message}`); // Устанавливаем сообщение об ошибке 
+        }
     } catch (error) {
-      console.error('Ошибка при добавлении публикации:', error);
+        // console.error('Ошибка при добавлении публикации:', error);
+        setErrorMessage("Произошла ошибка при добавлении публикации. Попробуйте снова."); // Устанавливаем сообщение об ошибке
+
     }
-  };
+};
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -193,6 +279,8 @@ export default function Publications() {
     <>
       <Navbar role={isAdmin ? 'admin' : 'user'} />
       <div className="min-h-screen bg-gray-100 p-8">
+      <ErrorMessage message={errorMessage} />
+
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Публикации</h1>
           {!isAdmin && (
@@ -204,8 +292,7 @@ export default function Publications() {
             </button>
           )}
         </div>
-
-        {isAdding && (
+{isAdding && (
           <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
             {currentStep === 1 ? (
               <>
@@ -287,8 +374,7 @@ export default function Publications() {
                     />
                   </>
                 )}
-
-                {selectedType === 'books' && (
+{selectedType === 'books' && (
                   <>
                     <label className="block mb-1 font-medium text-gray-700">ISBN</label>
                     <input

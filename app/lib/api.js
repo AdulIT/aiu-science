@@ -39,9 +39,9 @@ export async function refreshAccessToken(router) {
 }
 
 export async function makeAuthenticatedRequest(endpoint, options = {}, router, retry = true) {
-  console.log("makeAuthenticatedRequest called with:");
-  console.log("Endpoint:", endpoint);
-  console.log("Initial Options:", options);
+  // console.log("makeAuthenticatedRequest called with:");
+  // console.log("Endpoint:", endpoint);
+  // console.log("Initial Options:", options);
 
   let accessToken = localStorage.getItem('accessToken');
 
@@ -54,19 +54,19 @@ export async function makeAuthenticatedRequest(endpoint, options = {}, router, r
     ...options.headers,
     'Authorization': `Bearer ${accessToken}`,
   };
-  console.log("Options with Authorization Header:", options);
+  // console.log("Options with Authorization Header:", options);
 
   try {
     const response = await fetch(endpoint, options);
 
-    console.log(`Response status for ${endpoint}:`, response.status);
+    // console.log(`Response status for ${endpoint}:`, response.status);
 
     if (response.status === 401 && retry) {
       console.warn("Unauthorized. Attempting token refresh...");
       accessToken = await refreshAccessToken(router);
       if (accessToken) {
         options.headers['Authorization'] = `Bearer ${accessToken}`;
-        console.log("Retrying request with refreshed token...");
+        // console.log("Retrying request with refreshed token...");
         return makeAuthenticatedRequest(endpoint, options, router, false);
       } else {
         console.error("Token refresh failed. Redirecting to login.");

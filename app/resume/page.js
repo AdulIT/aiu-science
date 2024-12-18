@@ -66,7 +66,7 @@ export default function UserResume() {
       );
       
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       if (format === 'docx') {
         window.open(`${url}/api/user/downloadResumeDocx?path=${data.docxPath}`);
       } else if (format === 'pdf') {
