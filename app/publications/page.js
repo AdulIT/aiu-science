@@ -303,6 +303,65 @@ const handleFileChange = (e) => {
     }
   };
 
+  const handleEditPublication = async (iin, updatedFields) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setErrorMessage("Вы не авторизованы. Пожалуйста, войдите снова.");
+        return;
+      }
+  
+      const response = await makeAuthenticatedRequest(`${url}/api/user/editPublication/${iin}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedFields),
+      }, router);
+  
+      if (response.ok) {
+        const updatedPublication = await response.json();
+        setPublications((prev) =>
+          prev.map((pub) => (pub.iin === iin ? updatedPublication : pub))
+        );
+        console.log('Публикация обновлена:', updatedPublication);
+      } else {
+        setErrorMessage("Ошибка при обновлении публикации.");
+      }
+    } catch (error) {
+      console.error('Ошибка при обновлении публикации:', error);
+      setErrorMessage("Произошла ошибка при обновлении публикации.");
+    }
+  };
+  
+  const handleDeletePublication = async (iin) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setErrorMessage("Вы не авторизованы. Пожалуйста, войдите снова.");
+        return;
+      }
+  
+      const response = await makeAuthenticatedRequest(`${url}/api/user/deletePublication/${iin}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }, router);
+  
+      if (response.ok) {
+        setPublications((prev) => prev.filter((pub) => pub.iin !== iin));
+        console.log(`Публикация с ID ${iin} удалена.`);
+      } else {
+        setErrorMessage("Ошибка при удалении публикации.");
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении публикации:', error);
+      setErrorMessage("Произошла ошибка при удалении публикации.");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -479,6 +538,20 @@ const handleFileChange = (e) => {
                     <strong>Файл:</strong> <a href={`${url}/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
                   </p>
                 )}
+                <div>
+                  <button
+                    onClick={() => handleEditPublication(publication.userId, { title: 'Новое название' })}
+                    className="py-1 px-3 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    onClick={() => handleDeletePublication(publication.id)}
+                    className="py-1 px-3 text-white bg-red-600 rounded-lg hover:bg-red-700"
+                  >
+                    Удалить
+                  </button>
+                </div>
               </div>
             ))
           ) : (
