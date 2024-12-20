@@ -9,19 +9,18 @@ export default function Login() {
   const router = useRouter();
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); // State for validation error message
+  const [error, setError] = useState(''); 
 
   const url = process.env.NEXT_PUBLIC_API_URL;
 
   const handleIINChange = (e) => {
-    const input = e.target.value.toLowerCase(); // Convert to lowercase
-    const isNumeric = /^\d*$/.test(input); // Check if only numbers
-    const isAllowedText = /^[admin]*$/.test(input); // Check if only 'a', 'd', 'm', 'i', 'n'
+    const input = e.target.value.toLowerCase();
+    const isNumeric = /^\d*$/.test(input); 
+    const isAllowedText = /^[admin]*$/.test(input);
 
-    // Allow numbers (up to 12) or allowed text characters
     if ((isNumeric && input.length <= 12) || isAllowedText) {
       setIIN(input);
-      setError(''); // Clear error if valid
+      setError('');
     } else {
       setError('Логин должен состоять из цифр (12 символов).');
     }
@@ -30,8 +29,8 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const isNumeric = /^\d{12}$/.test(iin); // Exactly 12 digits
-    const isAdmin = iin === 'admin'; // Specific word "admin"
+    const isNumeric = /^\d{12}$/.test(iin);
+    const isAdmin = iin === 'admin';
 
     if (!isNumeric && !isAdmin) {
       setError('Логин должен быть ровно 12 цифр');
@@ -46,7 +45,6 @@ export default function Login() {
         },
         body: JSON.stringify({ iin, password }),
       });
-      // console.log("API URL:", `${url}/api/auth/login`);
 
       if (!response) {
         throw new Error('Ответ от сервера отсутствует.');
@@ -134,10 +132,6 @@ export default function Login() {
             Сайт AIU
           </Link>{' '}
           |{' '}
-          <Link className="text-sm hover:underline" href="/">
-            {/* Система "Univer" */}
-          </Link>{' '}
-          {/* |{' '} */}
           <Link className="text-sm hover:underline" href="/">
             Инструкция по работе с системой
           </Link>

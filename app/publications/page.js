@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 import { makeAuthenticatedRequest } from '../lib/api';
+import { generateUserReport } from '../lib/reportUtils';
+import { getUserIIN } from '../lib/userUtils';
 import Navbar from '../../components/Navbar';
 import ErrorMessage from '../../components/ErrorMessage';
 
@@ -40,20 +42,39 @@ export default function Publications() {
 
   const url = process.env.NEXT_PUBLIC_API_URL;
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setErrorMessage("Вы не авторизованы. Пожалуйста, войдите в систему.");
-      return;
-    }
+  // useEffect(() => {
+  //   const token = localStorage.getItem('accessToken');
+  //   if (!token) {
+  //     setErrorMessage("Вы не авторизованы. Пожалуйста, войдите в систему.");
+  //     return;
+  //   }
   
+  //   try {
+  //     const decodedToken = jwtDecode(token);
+  //     setIsAdmin(decodedToken.role === 'admin');
+  //     localStorage.setItem('iin', decodedToken.iin); // Сохраняем IIN для повторного использования
+  //   } catch (error) {
+  //     console.error('Ошибка декодирования токена:', error);
+  //     setErrorMessage("Ошибка авторизации. Проверьте токен.");
+  //     router.push('/login');
+  //   }
+  // }, [router]);
+
+  useEffect(() => {
     try {
+      const iin = getUserIIN(); // Получение IIN через функцию
+      console.log('IIN пользователя:', iin);
+  
+      // Устанавливаем IIN в локальное хранилище, если нужно
+      localStorage.setItem('iin', iin);
+  
+      // Проверяем роль пользователя
+      const token = localStorage.getItem('accessToken');
       const decodedToken = jwtDecode(token);
       setIsAdmin(decodedToken.role === 'admin');
-      localStorage.setItem('iin', decodedToken.iin); // Сохраняем IIN для повторного использования
     } catch (error) {
-      console.error('Ошибка декодирования токена:', error);
-      setErrorMessage("Ошибка авторизации. Проверьте токен.");
+      console.error('Ошибка при получении IIN:', error.message);
+      setErrorMessage("Вы не авторизованы. Пожалуйста, войдите в систему.");
       router.push('/login');
     }
   }, [router]);
@@ -117,21 +138,27 @@ export default function Publications() {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
+
 const handleFileChange = (e) => {
     const file = e.target.files[0];
+    
     if (file && file.size > 5 * 1024 * 1024) {
-      alert('Файл не должен превышать 5MB.');
-      return;
+        setErrorMessage('Файл не должен превышать 5MB.');
+        e.target.value = ''
+        return;
     }
+
     if (file && !file.name.toLowerCase().endsWith('.pdf')) {
-      alert('Допустим только формат PDF.');
-      return;
+        setErrorMessage('Допустим только формат PDF.');
+        e.target.value = ''
+        return;
     }
+
     setNewPublication((prev) => ({
-      ...prev,
-      file,
+        ...prev,
+        file,
     }));
-  };
+};
 
   const handleAddPublication = async () => {
     const requiredFields = ['authors', 'title', 'year', 'output', 'publicationType'];
@@ -237,13 +264,12 @@ const handleFileChange = (e) => {
             setIsAdding(false);
         } else {
             // console.error('Ошибка при добавлении публикации');
-            // Обработка ошибок от сервера
-            const errorData = await response.json(); // Получаем тело ответа с ошибкой
-            setErrorMessage(`Ошибка: ${errorData.message}`); // Устанавливаем сообщение об ошибке 
+            const errorData = await response.json()
+            setErrorMessage(`Ошибка: ${errorData.message}`)
         }
     } catch (error) {
-        // console.error('Ошибка при добавлении публикации:', error);
-        setErrorMessage("Произошла ошибка при добавлении публикации. Попробуйте снова."); // Устанавливаем сообщение об ошибке
+
+        setErrorMessage("Произошла ошибка при добавлении публикации. Попробуйте снова.")
 
     }
 };
@@ -265,6 +291,16 @@ const handleFileChange = (e) => {
 
   const handlePreviousStep = () => {
     setCurrentStep(1);
+  };
+
+  const handleGenerateUserReport = () => {
+    try {
+      const iin = getUserIIN();
+      generateUserReport(url, router, iin);
+    } catch (error) {
+      console.error('Ошибка при генерации отчета:', error.message);
+      setErrorMessage("Произошла ошибка при генерации отчета.");
+    }
   };
 
   if (isLoading) {
@@ -292,7 +328,13 @@ const handleFileChange = (e) => {
             </button>
           )}
         </div>
-{isAdding && (
+        <button
+            onClick={handleGenerateUserReport}
+            className="mt-2 mb-2 py-2 px-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none"
+          >
+          Генерировать отчет
+        </button>
+        {isAdding && (
           <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
             {currentStep === 1 ? (
               <>

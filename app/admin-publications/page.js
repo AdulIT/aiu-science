@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { makeAuthenticatedRequest } from '../lib/api';
+import { generateReport, generateUserReport } from '../lib/reportUtils';
 import Navbar from '../../components/Navbar';
 import Link from 'next/link';
 import { jwtDecode } from 'jwt-decode';
@@ -123,82 +124,15 @@ export default function AdminPublications() {
     setFilteredPublications(filtered);
   }, [yearRange, selectedUser, selectedHigherSchool, publications, users]);
 
-  const generateReport = async () => {
-  try {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('Авторизуйтесь перед генерацией отчета.');
-      router.push('/login');
-      return;
-    }
-
-    const response = await makeAuthenticatedRequest(`${url}/api/admin/generateAllPublicationsReport`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }, router);
-
-    if (response.ok) {
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'all_publications_report.docx';  // Set the filename
-      document.body.appendChild(a); // Append to the document
-      a.click(); // Trigger the download
-      a.remove(); // Clean up
-    } else {
-      alert('Ошибка при генерации отчета.');
-    }
-  } catch (error) {
-    console.error('Ошибка при генерации отчета:', error);
-    alert('Произошла ошибка при генерации отчета.');
-  }
+  // Вызов для генерации отчета по всем публикациям
+  const handleGenerateAllPublicationsReport = () => {
+    generateReport(url, router);
   };
-  
-const generateUserReport = async (iin) => {
-  try {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('Авторизуйтесь перед генерацией отчета.');
-      router.push('/login');
-      return;
-    }
 
-    const response = await makeAuthenticatedRequest(
-      `${url}/api/admin/generateUserReport`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ iin }), // Send the user's IIN as part of the request body
-      },
-      router
-    );
-
-    if (response.ok) {
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${iin}_report.docx`; // Set the filename based on user IIN
-      document.body.appendChild(a); // Append to the document
-      a.click(); // Trigger the download
-      a.remove(); // Clean up
-    } else {
-      // Log the error response for more information
-      const errorText = await response.text();
-      console.error('Error response from server:', errorText);
-      alert(`Ошибка при генерации отчета по пользователю: ${errorText}`);
-    }
-  } catch (error) {
-    console.error('Error in generateUserReport:', error);
-    alert('Произошла ошибка при генерации отчета по пользователю.');
-  }
-};
+  // Вызов для генерации отчета по конкретному пользователю
+  const handleGenerateUserReport = (iin) => {
+    generateUserReport(url, router, iin);
+  };
 
   const handleYearRangeChange = (e, type) => {
     const value = e.target.value ? parseInt(e.target.value, 10) : '';
@@ -223,7 +157,7 @@ const generateUserReport = async (iin) => {
         <div className="flex flex-col items-center w-full max-w-4xl mb-6"> {/* Center-align container */}
           <h1 className="text-2xl font-bold">Публикации всех сотрудников</h1>
           <button
-            onClick={generateReport}
+            onClick={handleGenerateAllPublicationsReport}
             className="mt-2 py-2 px-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none"
           >
             Генерировать отчет
@@ -308,7 +242,7 @@ const generateUserReport = async (iin) => {
                   </p>
                 )}
                 <button
-                  onClick={() => generateUserReport(publication.iin)}
+                  onClick={() => handleGenerateUserReport(publication.iin)}
                   className="mt-2 py-1 px-3 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none"
                 >
                   Генерировать отчет по пользователю
