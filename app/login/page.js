@@ -9,11 +9,35 @@ export default function Login() {
   const router = useRouter();
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(''); // State for validation error message
+
   const url = process.env.NEXT_PUBLIC_API_URL;
-  // const url = 'http://localhost:8080';
+
+  const handleIINChange = (e) => {
+    const input = e.target.value.toLowerCase(); // Convert to lowercase
+    const isNumeric = /^\d*$/.test(input); // Check if only numbers
+    const isAllowedText = /^[admin]*$/.test(input); // Check if only 'a', 'd', 'm', 'i', 'n'
+
+    // Allow numbers (up to 12) or allowed text characters
+    if ((isNumeric && input.length <= 12) || isAllowedText) {
+      setIIN(input);
+      setError(''); // Clear error if valid
+    } else {
+      setError('Логин должен состоять из цифр (12 символов).');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const isNumeric = /^\d{12}$/.test(iin); // Exactly 12 digits
+    const isAdmin = iin === 'admin'; // Specific word "admin"
+
+    if (!isNumeric && !isAdmin) {
+      setError('Логин должен быть ровно 12 цифр');
+      return;
+    }
+    
     try {
       const response = await fetch(`${url}/api/auth/login`, {
         method: 'POST',
@@ -71,10 +95,14 @@ export default function Login() {
                 <input
                   type="text"
                   value={iin}
-                  onChange={(e) => setIIN(e.target.value)}
+                  onChange={(e) => {
+                    // setIIN(e.target.value)
+                    handleIINChange(e)
+                  }}
                   required
                   className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
               </div>
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Пароль</label>

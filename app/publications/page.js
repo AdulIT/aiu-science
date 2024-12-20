@@ -303,12 +303,12 @@ const handleFileChange = (e) => {
                   className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Выберите тип публикации</option>
-                  <option value="scopus_wos">Научные труды (Scopus/Web of Science)</option>
-                  <option value="koknvo">КОКНВО</option>
-                  <option value="conference">Материалы конференций</option>
-                  <option value="articles">Статьи РК и не включенные в Scopus/WoS</option>
-                  <option value="books">Монографии, книги и учебные материалы</option>
-                  <option value="patents">Патенты, авторское свидетельство</option>
+                  <option value="scopus_wos">Публикации Scopus и Web of Science</option>
+                  <option value="koknvo">Научные статьи в журналах КОКНВО</option>
+                  <option value="conference">Публикации в материалах конференций</option>
+                  <option value="articles">Научные статьи в периодических изданиях</option>
+                  <option value="books">Монографии, учебные пособия и другие книги</option>
+                  <option value="patents">Патенты, авторские свидетельства и др. охранные документы</option>
                 </select>
                 <button
                   onClick={handleNextStep}
@@ -324,7 +324,7 @@ const handleFileChange = (e) => {
                   <div key={field} className="mb-4">
                     <label className="block mb-1 font-medium text-gray-700">
                       {field === 'authors' && 'Авторы'}
-                      {field === 'title' && 'Название статьи'}
+                      {field === 'title' && 'Название'}
                       {field === 'year' && 'Год'}
                     </label>
                     <input
@@ -374,7 +374,19 @@ const handleFileChange = (e) => {
                     />
                   </>
                 )}
-{selectedType === 'books' && (
+                {selectedType === 'koknvo' && (
+                  <>
+                    <label className="block mb-1 font-medium text-gray-700">Ссылки, DOI</label>
+                    <input
+                      type="text"
+                      name="doi"
+                      value={newPublication.doi}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </>
+                )}
+                {selectedType === 'books' && (
                   <>
                     <label className="block mb-1 font-medium text-gray-700">ISBN</label>
                     <input
