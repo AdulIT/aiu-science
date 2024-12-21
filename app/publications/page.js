@@ -430,7 +430,7 @@ const handleFileChange = (e) => {
                   <option value="conference">Публикации в материалах конференций</option>
                   <option value="articles">Научные статьи в периодических изданиях</option>
                   <option value="books">Монографии, учебные пособия и другие книги</option>
-                  <option value="patents">Патенты, авторские свидетельства и др. охранные документы</option>
+                  <option value="patents">Патенты, авторские свидетельства и другие охранные документы</option>
                 </select>
                 <button
                   onClick={handleNextStep}
