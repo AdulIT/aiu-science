@@ -17,6 +17,15 @@ const publicationTypeMap = {
     patents: 'Патенты, авторское свидетельство',
 };
 
+const allHigherSchools = [
+  "Высшая школа информационных технологий и инженерии",
+  "Высшая школа экономики",
+  "Высшая школа права",
+  "Педагогический институт",
+  "Высшая школа искусств и гуманитарных наук",
+  "Высшая школа естественных наук"
+];
+
 export default function AdminPublications() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +58,6 @@ export default function AdminPublications() {
         }
 
         const response = await makeAuthenticatedRequest(
-        //   `'http://localhost:8080/api/admin/publications'`,
           `${url}/api/admin/publications`,
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
           router
@@ -84,7 +92,6 @@ export default function AdminPublications() {
       try {
         const token = localStorage.getItem('accessToken');
         const response = await makeAuthenticatedRequest(
-        //   'http://localhost:8080/api/admin/users',
           `${url}/api/admin/users`,
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
           router
@@ -92,9 +99,7 @@ export default function AdminPublications() {
         const data = await response.json();
         setUsers(data.users);
 
-        // Extract unique higher schools
-        const uniqueHigherSchools = [...new Set(data.users.map(user => user.higherSchool))].filter(Boolean);
-        setHigherSchools(uniqueHigherSchools);
+        setHigherSchools(allHigherSchools);
       } catch (error) {
         console.error('Ошибка при загрузке пользователей:', error);
       }
@@ -170,7 +175,7 @@ export default function AdminPublications() {
             <select value={selectedUser} onChange={e => setSelectedUser(e.target.value)} className="px-3 py-2 border rounded-md">
               <option value="">Все пользователи</option>
               {users && users.map((user, index) => (
-                <option key={index} value={user.iin}>{user.fullName}</option>
+                <option key={index} value={user.iin}>{user.fullName || "ФИО отсутствует"}</option>
               ))}
             </select>
           </div>
@@ -182,7 +187,7 @@ export default function AdminPublications() {
               onChange={e => setSelectedHigherSchool(e.target.value)}
               className="px-3 py-2 border rounded-md"
             >
-              <option value="">Все высшие школы</option>
+              <option value="">Высшие школы</option>
               {higherSchools.map((school, index) => (
                 <option key={index} value={school}>{school}</option>
               ))}
