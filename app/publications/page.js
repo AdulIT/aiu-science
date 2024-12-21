@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 import { makeAuthenticatedRequest } from '../lib/api';
+import { generateUserReport } from '../lib/reportUtils';
+import { getUserIIN } from '../lib/userUtils';
 import Navbar from '../../components/Navbar';
 import ErrorMessage from '../../components/ErrorMessage';
 
@@ -40,20 +42,39 @@ export default function Publications() {
 
   const url = process.env.NEXT_PUBLIC_API_URL;
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setErrorMessage("Вы не авторизованы. Пожалуйста, войдите в систему.");
-      return;
-    }
+  // useEffect(() => {
+  //   const token = localStorage.getItem('accessToken');
+  //   if (!token) {
+  //     setErrorMessage("Вы не авторизованы. Пожалуйста, войдите в систему.");
+  //     return;
+  //   }
   
+  //   try {
+  //     const decodedToken = jwtDecode(token);
+  //     setIsAdmin(decodedToken.role === 'admin');
+  //     localStorage.setItem('iin', decodedToken.iin); // Сохраняем IIN для повторного использования
+  //   } catch (error) {
+  //     console.error('Ошибка декодирования токена:', error);
+  //     setErrorMessage("Ошибка авторизации. Проверьте токен.");
+  //     router.push('/login');
+  //   }
+  // }, [router]);
+
+  useEffect(() => {
     try {
+      const iin = getUserIIN(); // Получение IIN через функцию
+      console.log('IIN пользователя:', iin);
+  
+      // Устанавливаем IIN в локальное хранилище, если нужно
+      localStorage.setItem('iin', iin);
+  
+      // Проверяем роль пользователя
+      const token = localStorage.getItem('accessToken');
       const decodedToken = jwtDecode(token);
       setIsAdmin(decodedToken.role === 'admin');
-      localStorage.setItem('iin', decodedToken.iin); // Сохраняем IIN для повторного использования
     } catch (error) {
-      console.error('Ошибка декодирования токена:', error);
-      setErrorMessage("Ошибка авторизации. Проверьте токен.");
+      console.error('Ошибка при получении IIN:', error.message);
+      setErrorMessage("Вы не авторизованы. Пожалуйста, войдите в систему.");
       router.push('/login');
     }
   }, [router]);
@@ -117,21 +138,27 @@ export default function Publications() {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
+
 const handleFileChange = (e) => {
     const file = e.target.files[0];
+    
     if (file && file.size > 5 * 1024 * 1024) {
-      alert('Файл не должен превышать 5MB.');
-      return;
+        setErrorMessage('Файл не должен превышать 5MB.');
+        e.target.value = ''
+        return;
     }
+
     if (file && !file.name.toLowerCase().endsWith('.pdf')) {
-      alert('Допустим только формат PDF.');
-      return;
+        setErrorMessage('Допустим только формат PDF.');
+        e.target.value = ''
+        return;
     }
+
     setNewPublication((prev) => ({
-      ...prev,
-      file,
+        ...prev,
+        file,
     }));
-  };
+};
 
   const handleAddPublication = async () => {
     const requiredFields = ['authors', 'title', 'year', 'output', 'publicationType'];
@@ -237,13 +264,12 @@ const handleFileChange = (e) => {
             setIsAdding(false);
         } else {
             // console.error('Ошибка при добавлении публикации');
-            // Обработка ошибок от сервера
-            const errorData = await response.json(); // Получаем тело ответа с ошибкой
-            setErrorMessage(`Ошибка: ${errorData.message}`); // Устанавливаем сообщение об ошибке 
+            const errorData = await response.json()
+            setErrorMessage(`Ошибка: ${errorData.message}`)
         }
     } catch (error) {
-        // console.error('Ошибка при добавлении публикации:', error);
-        setErrorMessage("Произошла ошибка при добавлении публикации. Попробуйте снова."); // Устанавливаем сообщение об ошибке
+
+        setErrorMessage("Произошла ошибка при добавлении публикации. Попробуйте снова.")
 
     }
 };
@@ -265,6 +291,75 @@ const handleFileChange = (e) => {
 
   const handlePreviousStep = () => {
     setCurrentStep(1);
+  };
+
+  const handleGenerateUserReport = () => {
+    try {
+      const iin = getUserIIN();
+      generateUserReport(url, router, iin);
+    } catch (error) {
+      console.error('Ошибка при генерации отчета:', error.message);
+      setErrorMessage("Произошла ошибка при генерации отчета.");
+    }
+  };
+
+  const handleEditPublication = async (iin, updatedFields) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setErrorMessage("Вы не авторизованы. Пожалуйста, войдите снова.");
+        return;
+      }
+  
+      const response = await makeAuthenticatedRequest(`${url}/api/user/editPublication/${iin}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedFields),
+      }, router);
+  
+      if (response.ok) {
+        const updatedPublication = await response.json();
+        setPublications((prev) =>
+          prev.map((pub) => (pub.iin === iin ? updatedPublication : pub))
+        );
+        console.log('Публикация обновлена:', updatedPublication);
+      } else {
+        setErrorMessage("Ошибка при обновлении публикации.");
+      }
+    } catch (error) {
+      console.error('Ошибка при обновлении публикации:', error);
+      setErrorMessage("Произошла ошибка при обновлении публикации.");
+    }
+  };
+  
+  const handleDeletePublication = async (iin) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setErrorMessage("Вы не авторизованы. Пожалуйста, войдите снова.");
+        return;
+      }
+  
+      const response = await makeAuthenticatedRequest(`${url}/api/user/deletePublication/${iin}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }, router);
+  
+      if (response.ok) {
+        setPublications((prev) => prev.filter((pub) => pub.iin !== iin));
+        console.log(`Публикация с ID ${iin} удалена.`);
+      } else {
+        setErrorMessage("Ошибка при удалении публикации.");
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении публикации:', error);
+      setErrorMessage("Произошла ошибка при удалении публикации.");
+    }
   };
 
   if (isLoading) {
@@ -292,7 +387,13 @@ const handleFileChange = (e) => {
             </button>
           )}
         </div>
-{isAdding && (
+        <button
+            onClick={handleGenerateUserReport}
+            className="mt-2 mb-2 py-2 px-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none"
+          >
+          Генерировать отчет
+        </button>
+        {isAdding && (
           <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
             {currentStep === 1 ? (
               <>
@@ -303,12 +404,12 @@ const handleFileChange = (e) => {
                   className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Выберите тип публикации</option>
-                  <option value="scopus_wos">Научные труды (Scopus/Web of Science)</option>
-                  <option value="koknvo">КОКНВО</option>
-                  <option value="conference">Материалы конференций</option>
-                  <option value="articles">Статьи РК и не включенные в Scopus/WoS</option>
-                  <option value="books">Монографии, книги и учебные материалы</option>
-                  <option value="patents">Патенты, авторское свидетельство</option>
+                  <option value="scopus_wos">Публикации Scopus и Web of Science</option>
+                  <option value="koknvo">Научные статьи в журналах КОКНВО</option>
+                  <option value="conference">Публикации в материалах конференций</option>
+                  <option value="articles">Научные статьи в периодических изданиях</option>
+                  <option value="books">Монографии, учебные пособия и другие книги</option>
+                  <option value="patents">Патенты, авторские свидетельства и др. охранные документы</option>
                 </select>
                 <button
                   onClick={handleNextStep}
@@ -324,7 +425,7 @@ const handleFileChange = (e) => {
                   <div key={field} className="mb-4">
                     <label className="block mb-1 font-medium text-gray-700">
                       {field === 'authors' && 'Авторы'}
-                      {field === 'title' && 'Название статьи'}
+                      {field === 'title' && 'Название'}
                       {field === 'year' && 'Год'}
                     </label>
                     <input
@@ -374,7 +475,19 @@ const handleFileChange = (e) => {
                     />
                   </>
                 )}
-{selectedType === 'books' && (
+                {selectedType === 'koknvo' && (
+                  <>
+                    <label className="block mb-1 font-medium text-gray-700">Ссылки, DOI</label>
+                    <input
+                      type="text"
+                      name="doi"
+                      value={newPublication.doi}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </>
+                )}
+                {selectedType === 'books' && (
                   <>
                     <label className="block mb-1 font-medium text-gray-700">ISBN</label>
                     <input
@@ -425,6 +538,20 @@ const handleFileChange = (e) => {
                     <strong>Файл:</strong> <a href={`${url}/${publication.file}`} download className="text-blue-600 hover:underline">Скачать файл</a>
                   </p>
                 )}
+                <div>
+                  <button
+                    onClick={() => handleEditPublication(publication.userId, { title: 'Новое название' })}
+                    className="py-1 px-3 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    onClick={() => handleDeletePublication(publication.id)}
+                    className="py-1 px-3 text-white bg-red-600 rounded-lg hover:bg-red-700"
+                  >
+                    Удалить
+                  </button>
+                </div>
               </div>
             ))
           ) : (

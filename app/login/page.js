@@ -9,11 +9,34 @@ export default function Login() {
   const router = useRouter();
   const [iin, setIIN] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(''); 
+
   const url = process.env.NEXT_PUBLIC_API_URL;
-  // const url = 'http://localhost:8080';
+
+  const handleIINChange = (e) => {
+    const input = e.target.value.toLowerCase();
+    const isNumeric = /^\d*$/.test(input); 
+    const isAllowedText = /^[admin]*$/.test(input);
+
+    if ((isNumeric && input.length <= 12) || isAllowedText) {
+      setIIN(input);
+      setError('');
+    } else {
+      setError('Логин должен состоять из цифр (12 символов).');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const isNumeric = /^\d{12}$/.test(iin);
+    const isAdmin = iin === 'admin';
+
+    if (!isNumeric && !isAdmin) {
+      setError('Логин должен быть ровно 12 цифр');
+      return;
+    }
+    
     try {
       const response = await fetch(`${url}/api/auth/login`, {
         method: 'POST',
@@ -22,7 +45,6 @@ export default function Login() {
         },
         body: JSON.stringify({ iin, password }),
       });
-      // console.log("API URL:", `${url}/api/auth/login`);
 
       if (!response) {
         throw new Error('Ответ от сервера отсутствует.');
@@ -71,10 +93,14 @@ export default function Login() {
                 <input
                   type="text"
                   value={iin}
-                  onChange={(e) => setIIN(e.target.value)}
+                  onChange={(e) => {
+                    // setIIN(e.target.value)
+                    handleIINChange(e)
+                  }}
                   required
                   className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
               </div>
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Пароль</label>
@@ -106,10 +132,6 @@ export default function Login() {
             Сайт AIU
           </Link>{' '}
           |{' '}
-          <Link className="text-sm hover:underline" href="/">
-            {/* Система "Univer" */}
-          </Link>{' '}
-          {/* |{' '} */}
           <Link className="text-sm hover:underline" href="/">
             Инструкция по работе с системой
           </Link>
