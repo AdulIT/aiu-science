@@ -55,7 +55,7 @@ export default function UserProfile() {
     const fetchUserPublications = async () => {
       try {
         const response = await makeAuthenticatedRequest(
-          `${url}/api/user/${iin}/publications`,
+          `${url}/api/user/${iin}/getPublications`,
           { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
           router
         );
@@ -111,7 +111,7 @@ export default function UserProfile() {
 
   const generateResume = async (format) => {
     try {
-      const response = await makeAuthenticatedRequest('${url}/api/user/generateResume', {
+      const response = await makeAuthenticatedRequest(`${url}/api/user/generateResume`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ iin }),
