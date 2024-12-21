@@ -189,34 +189,34 @@ export default function AdminPublications() {
             </select>
           </div>
 
-<div className="flex flex-col items-start">
-  <label className="mb-1 font-semibold">Диапазон по годам:</label>
-  <div className="flex space-x-2">
-    {/* "От" (from) dropdown */}
-    <select
-      value={yearRange.from}
-      onChange={e => handleYearRangeChange(e, 'from')}
-      className="px-3 py-2 border rounded-md"
-    >
-      <option value="">От</option>
-      {Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i).map(year => (
-        <option key={year} value={year}>{year}</option>
-      ))}
-    </select>
+          <div className="flex flex-col items-start">
+            <label className="mb-1 font-semibold">Диапазон по годам:</label>
+            <div className="flex space-x-2">
+              {/* "От" (from) dropdown */}
+              <select
+                value={yearRange.from}
+                onChange={e => handleYearRangeChange(e, 'from')}
+                className="px-3 py-2 border rounded-md"
+              >
+                <option value="">От</option>
+                {Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i).map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
 
-    {/* "До" (to) dropdown */}
-    <select
-      value={yearRange.to}
-      onChange={e => handleYearRangeChange(e, 'to')}
-      className="px-3 py-2 border rounded-md"
-    >
-      <option value="">До</option>
-      {Array.from({ length: maxYear - (yearRange.from || minYear) + 1 }, (_, i) => (yearRange.from || minYear) + i).map(year => (
-        <option key={year} value={year}>{year}</option>
-      ))}
-    </select>
-  </div>
-</div>
+              {/* "До" (to) dropdown */}
+              <select
+                value={yearRange.to}
+                onChange={e => handleYearRangeChange(e, 'to')}
+                className="px-3 py-2 border rounded-md"
+              >
+                <option value="">До</option>
+                {Array.from({ length: maxYear - (yearRange.from || minYear) + 1 }, (_, i) => (yearRange.from || minYear) + i).map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
         </div>
 

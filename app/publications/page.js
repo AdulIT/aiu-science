@@ -23,9 +23,11 @@ export default function Publications() {
   const [isLoading, setIsLoading] = useState(true);
   const [publications, setPublications] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
+  // const [isEditing, setIsEditing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedType, setSelectedType] = useState("");
+  // const [editingPublicationId, setEditingPublicationId] = useState(null);
   const [newPublication, setNewPublication] = useState({
     authors: '',
     title: '',
@@ -38,7 +40,21 @@ export default function Publications() {
     file: null,
     publicationType: '',
   });
-  const [errorMessage, setErrorMessage] = useState(""); // Состояние для ошибок
+
+  // const [publicationData, setPublicationData] = useState({
+  //   authors: '',
+  //   title: '',
+  //   year: '',
+  //   output: '',
+  //   doi: '',
+  //   isbn: '',
+  //   scopus: false,
+  //   wos: false,
+  //   file: null,
+  //   publicationType: '',
+  // });
+
+  const [errorMessage, setErrorMessage] = useState("");
 
   const url = process.env.NEXT_PUBLIC_API_URL;
 
@@ -289,6 +305,18 @@ const handleFileChange = (e) => {
     }
   };
 
+  // const handleEditNextStep = () => {
+  //   if (selectedType) {
+  //     setPublicationData((prev) => ({
+  //       ...prev,
+  //       publicationType: selectedType,
+  //     }));
+  //     setCurrentStep(2);
+  //   } else {
+  //     alert("Пожалуйста, выберите тип публикации");
+  //   }
+  // };
+
   const handlePreviousStep = () => {
     setCurrentStep(1);
   };
@@ -303,64 +331,57 @@ const handleFileChange = (e) => {
     }
   };
 
-  const handleEditPublication = async (iin, updatedFields) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setErrorMessage("Вы не авторизованы. Пожалуйста, войдите снова.");
-        return;
-      }
-  
-      const response = await makeAuthenticatedRequest(`${url}/api/user/editPublication/${iin}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedFields),
-      }, router);
-  
-      if (response.ok) {
-        const updatedPublication = await response.json();
-        setPublications((prev) =>
-          prev.map((pub) => (pub.iin === iin ? updatedPublication : pub))
-        );
-        console.log('Публикация обновлена:', updatedPublication);
-      } else {
-        setErrorMessage("Ошибка при обновлении публикации.");
-      }
-    } catch (error) {
-      console.error('Ошибка при обновлении публикации:', error);
-      setErrorMessage("Произошла ошибка при обновлении публикации.");
-    }
-  };
-  
-  const handleDeletePublication = async (iin) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setErrorMessage("Вы не авторизованы. Пожалуйста, войдите снова.");
-        return;
-      }
-  
-      const response = await makeAuthenticatedRequest(`${url}/api/user/deletePublication/${iin}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }, router);
-  
-      if (response.ok) {
-        setPublications((prev) => prev.filter((pub) => pub.iin !== iin));
-        console.log(`Публикация с ID ${iin} удалена.`);
-      } else {
-        setErrorMessage("Ошибка при удалении публикации.");
-      }
-    } catch (error) {
-      console.error('Ошибка при удалении публикации:', error);
-      setErrorMessage("Произошла ошибка при удалении публикации.");
-    }
-  };
+  // const handleEditedInputChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   setPublicationData((prev) => ({
+  //     ...prev,
+  //     [name]: type === 'checkbox' ? checked : value,
+  //   }));
+  // };
+
+
+  // const handleEditPublication = (publication) => {
+  //   setIsEditing(true);
+  //   setEditingPublicationId(publication._id);
+  //   setSelectedType(publication.publicationType);
+  //   setPublicationData({ ...publication });
+  //   setCurrentStep(1);
+  // };
+
+  // const handleSave = async () => {
+  //   try {
+  //     const token = localStorage.getItem('accessToken');
+  //     if (!token) {
+  //       alert('Ошибка авторизации. Пожалуйста, войдите снова.');
+  //       return;
+  //     }
+  //     const id = localStorage.getItem('editingPublicationId'); // Извлекаем ID из localStorage
+  //     if (!id) {
+  //       alert('ID публикации не найден.');
+  //       return;
+  //     }
+      
+  //     const response = await makeAuthenticatedRequest(`${url}/api/user/editPublication/${editingPublicationId}`, {
+  //       method: 'PUT',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify(publicationData),
+  //     }, router);
+
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       throw new Error(`Ошибка при сохранении изменений: ${errorText}`);
+  //     }
+
+  //     alert('Публикация успешно обновлена!');
+  //     router.push('/publications');
+  //   } catch (error) {
+  //     console.error('Ошибка при сохранении изменений:', error);
+  //     alert('Произошла ошибка. Попробуйте позже.');
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -373,8 +394,8 @@ const handleFileChange = (e) => {
   return (
     <>
       <Navbar role={isAdmin ? 'admin' : 'user'} />
-      <div className="min-h-screen bg-gray-100 p-8">
-      <ErrorMessage message={errorMessage} />
+      <div className="max-w-7xl mx-auto min-h-screen bg-gray-100 p-8">
+        <ErrorMessage message={errorMessage} />
 
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Публикации</h1>
@@ -393,7 +414,7 @@ const handleFileChange = (e) => {
           >
           Генерировать отчет
         </button>
-        {isAdding && (
+        {isAdding && !isEditing && (
           <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
             {currentStep === 1 ? (
               <>
@@ -539,18 +560,18 @@ const handleFileChange = (e) => {
                   </p>
                 )}
                 <div>
-                  <button
-                    onClick={() => handleEditPublication(publication.userId, { title: 'Новое название' })}
-                    className="py-1 px-3 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                  {/* <button
+                    onClick={handleEditPublication}
+                    className="mt-3 py-1 px-3 text-white bg-green-600 rounded-lg hover:bg-green-700"
                   >
                     Редактировать
-                  </button>
-                  <button
+                  </button> */}
+                  {/* <button
                     onClick={() => handleDeletePublication(publication.id)}
                     className="py-1 px-3 text-white bg-red-600 rounded-lg hover:bg-red-700"
                   >
                     Удалить
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))
@@ -558,6 +579,73 @@ const handleFileChange = (e) => {
             <p className="text-gray-600">У вас пока нет публикаций.</p>
           )}
         </div>
+
+          {/* <div className="min-h-screen bg-gray-100 p-8">
+          <h1 className="text-2xl font-bold mb-4">Редактировать публикацию</h1>
+          {isEditing ? (
+            <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-inner">
+              {currentStep === 1 ? (
+                <>
+                  <h2 className="text-xl font-bold mb-4">Выберите тип публикации</h2>
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Выберите тип публикации</option>
+                    {Object.entries(publicationTypeMap).map(([key, value]) => (
+                      <option key={key} value={key}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={handleEditNextStep}
+                    className="py-2 px-4 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none"
+                  >
+                    Следующий
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold mb-4">Детали публикации</h2>
+                  {Object.keys(publicationData).map((field) => (
+                    <div key={field} className="mb-4">
+                      <label className="block mb-1 font-medium text-gray-700">
+                        {field}
+                      </label>
+                      <input
+                        type="text"
+                        name={field}
+                        value={publicationData[field]}
+                        onChange={handleEditedInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  ))}
+                  <button
+                    onClick={handleSave}
+                    className="mt-6 py-2 px-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none"
+                  >
+                    Сохранить изменения
+                  </button>
+                </>
+              )}
+            </div>
+          ) : (
+            publications.map((publication) => (
+              <div key={publication._id}>
+                <h3>{publication.title}</h3>
+                <button
+                  onClick={() => handleEditPublication(publication)}
+                  className="mt-3 py-1 px-3 text-white bg-green-600 rounded-lg hover:bg-green-700"
+                >
+                  Редактировать
+                </button>
+              </div>
+            ))
+          )}
+        </div> */}
       </div>
     </>
   );
